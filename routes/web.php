@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\MagazineController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\PlanController;
+use App\Http\Controllers\Admin\ReportController;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -82,4 +83,14 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::delete('plan/{id}', [PlanController::class, 'destroy'])->name('plan.destroy');
     Route::post('plan/bulk-delete', [PlanController::class, 'bulkDelete'])->name('plan.bulk-delete');
     Route::post('plan/toggle-status', [PlanController::class, 'toggleStatus'])->name('plan.toggle-status');
+});
+
+
+Route::prefix('admin')->middleware(['auth'])->group(function () 
+{
+    Route::get('/customers', [ReportController::class, 'index'])->name('admin.customers.index');
+    Route::get('/customers/{customer_id}/login-history', [ReportController::class, 'loginHistory'])->name('admin.customers.loginHistory');
+    Route::get('/customers/login-history/{customer_id}', [ReportController::class, 'loginHistoryAjax'])
+        ->name('admin.customers.loginHistoryAjax');
+
 });

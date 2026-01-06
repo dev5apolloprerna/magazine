@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\CustomerAuthController;
 use App\Http\Controllers\Api\CustomerPasswordController;
 use App\Http\Controllers\Api\MagazineApiController;
+use App\Http\Controllers\Api\SubscriptionApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,9 +32,17 @@ Route::post('customer-register', [CustomerAuthController::class, 'register']);
 
 Route::post('customer/forgot-password', [CustomerPasswordController::class, 'forgot']);
 Route::post('customer/reset-password',  [CustomerPasswordController::class, 'reset']);
+Route::middleware('auth:api')->post('customer/change-password', [CustomerPasswordController::class, 'changePassword']);
 
 
 Route::middleware('auth:api')->group(function () {
-    Route::post('magazines', [MagazineApiController::class, 'index']);          // list
+    Route::post('customer-profile', [CustomerAuthController::class, 'profile']);
+    Route::post('customer-profile/update', [CustomerAuthController::class, 'updateProfile']);
+    
+    Route::post('all_magazines', [MagazineApiController::class, 'all_magazines']);
+    Route::post('plan_list', [MagazineApiController::class, 'plan_list']);
+    Route::post('magazines', [MagazineApiController::class, 'index']);
     Route::post('magazines/detail', [MagazineApiController::class, 'show']);      // detail
+
+    Route::post('my-subscription', [SubscriptionApiController::class, 'index']);      // subscription
 });

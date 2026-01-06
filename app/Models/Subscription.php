@@ -14,4 +14,9 @@ class Subscription extends Model
     ];
 
     public $timestamps = false;
+
+      public function Plan()
+    {
+        return $this->belongsTo(Plan::class, 'plan_id', 'plan_id');
+    }
 }

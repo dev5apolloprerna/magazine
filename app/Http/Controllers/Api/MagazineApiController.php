@@ -5,8 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\MagazineMaster;
 use App\Models\Subscription;
+use App\Models\CustomerMagazineLog;
+use Illuminate\Support\Facades\DB;
+
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Models\Plan;
 
 class MagazineApiController extends Controller
 {
@@ -14,6 +18,107 @@ class MagazineApiController extends Controller
      * GET /api/magazines
      * LIST: show all magazines, but mark can_view based on subscription end_date
      */
+     
+    public function all_magazines(Request $request)
+    {
+        $user = auth()->guard('api')->user();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorised'
+            ], 401);
+        }
+
+        $customerId = $user->customer_id ?? $user->id;
+        // dd($customerId); 
+        $sub = $this->latestSubscription($customerId);
+        $subInfo = $this->subscriptionInfo($sub);
+
+        // $magazines = MagazineMaster::where('isDelete', 0)
+        //     ->where('iStatus', 1)
+        //     ->orderByDesc('year')
+        //     ->orderByRaw("FIELD(month,'December','November','October','September','August','July','June','May','April','March','February','January')") // optional
+        //     ->orderByDesc('id')
+        //     ->get();
+        
+        $query = MagazineMaster::where('isDelete', 0)
+        ->where('iStatus', 1);
+
+        // ✅ Filter by month
+        if ($request->filled('month')) {
+            $query->where('month', $request->month);
+        }
+    
+        // ✅ Filter by year
+        if ($request->filled('year')) {
+            $query->where('year', $request->year);
+        }
+    
+        $magazines = $query
+            ->orderByDesc('year')
+            ->orderByRaw("FIELD(month,'December','November','October','September','August','July','June','May','April','March','February','January')")
+            ->orderByDesc('id')
+            ->get();
+
+        $data = $magazines->map(function ($m) use ($sub) 
+        {
+            $access = $this->magazineAccess($m, $sub);
+
+            return [
+                'id'          => $m->id,
+                'title'       => $m->title,
+                'month'       => $m->month,
+                'year'        => $m->year,
+                'image_url'   => magazine_base_url($m->image),
+                'can_view'    => $access['can_view'],
+                'lock_reason' => $access['reason'],
+                // ✅ optional: hide pdf_url if locked
+                'pdf_url'     => $access['can_view'] ? magazine_base_url($m->pdf) : null,
+            ];
+        })->values();
+        if ($data->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No magazines found',
+                'data' => []
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            //'subscription' => $subInfo,
+            'data' => $data
+        ]);
+    }
+    
+    public function plan_list(Request $request)
+    {
+        $user = auth()->guard('api')->user();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorised'
+            ], 401);
+        }
+        $plans = Plan::where(["iStatus"=>1,"isDelete"=> 0])
+            ->select('plan_id', 'plan_name', 'plan_amount', 'days')
+            ->get();
+        if ($plans->isEmpty()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'No plans available',
+                'data'    => []
+            ]);
+        }
+    
+        return response()->json([
+            'success' => true,
+            'message' => 'Plan list fetched successfully',
+            'data'    => $plans
+        ]);
+    }
+    
+    
     public function index(Request $request)
     {
         $user = auth()->guard('api')->user();
@@ -64,9 +169,11 @@ class MagazineApiController extends Controller
      * GET /api/magazines/{id}
      * DETAIL: if locked then do not send pdf url
      */
+
     public function show(Request $request)
     {
-        $id=$request->id;
+        $id = $request->id;
+
         $user = auth()->guard('api')->user();
         if (!$user) {
             return response()->json([
@@ -103,6 +210,24 @@ class MagazineApiController extends Controller
             ], 403);
         }
 
+        // ✅ LOG MAGAZINE CLICK (increment clicked_count)
+        DB::transaction(function () use ($mag, $customerId) {
+            $log = CustomerMagazineLog::where('magazine_id', $mag->id)
+                ->where('customer_id', $customerId)
+                ->lockForUpdate()
+                ->first();
+
+            if ($log) {
+                $log->increment('clicked_count');
+            } else {
+                CustomerMagazineLog::create([
+                    'magazine_id' => $mag->id,
+                    'customer_id' => $customerId,
+                    'clicked_count' => 1,
+                ]);
+            }
+        });
+
         return response()->json([
             'success' => true,
             'can_view' => true,
@@ -117,6 +242,7 @@ class MagazineApiController extends Controller
             ],
         ]);
     }
+
 
     // -----------------------------
     // ✅ REQUIRED PRIVATE METHODS

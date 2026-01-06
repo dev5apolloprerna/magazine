@@ -1,4 +1,4 @@
-<?php 
+    <?php 
 if(auth()->user())
 {
 $roleid = auth()->user()->role_id;
@@ -47,8 +47,21 @@ $roleid = Auth::guard('web_employees')->user()->role_id;
                             <i class="nav-icon fas fa-credit-card"></i>Customer Subscriptions
                         </a>
                     </li>
-
-                  
+                <li class="nav-item">
+                    <a class="nav-link" href="#sidebarMore" data-bs-toggle="collapse" role="button"
+                        aria-expanded="true" aria-controls="sidebarMore">
+                        <i class="fa fa-list text-white"></i> Reports </a>
+                    <div class="menu-dropdown collapse show" id="sidebarMore" style="">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('admin.customers.index') }}"
+                                   class="nav-link {{ request()->routeIs('admin.customers.index') ? 'active' : '' }}">
+                                      <i class="far fa-circle nav-icon"></i></i>Customer Login Report
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
 
 
                  
