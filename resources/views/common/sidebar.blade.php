@@ -59,6 +59,22 @@ $roleid = Auth::guard('web_employees')->user()->role_id;
                                       <i class="far fa-circle nav-icon"></i></i>Customer Login Report
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.reports.userWisePdfViews') }}"
+                                   class="nav-link {{ request()->routeIs('admin.reports.userWisePdfViews*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-file-pdf"></i>
+                                    Customer Magazine View Report
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.reports.magazineWisePdfViews') }}"
+                                   class="nav-link {{ request()->routeIs('admin.reports.magazineWisePdfViews*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-chart-bar"></i>
+                                    <p>Magazine View Report</p>
+                                </a>
+                            </li>
+
+
                         </ul>
                     </div>
                 </li>

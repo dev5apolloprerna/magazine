@@ -86,6 +86,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 });
 
 
+// user login log history 
 Route::prefix('admin')->middleware(['auth'])->group(function () 
 {
     Route::get('/customers', [ReportController::class, 'index'])->name('admin.customers.index');
@@ -93,4 +94,24 @@ Route::prefix('admin')->middleware(['auth'])->group(function ()
     Route::get('/customers/login-history/{customer_id}', [ReportController::class, 'loginHistoryAjax'])
         ->name('admin.customers.loginHistoryAjax');
 
+});
+
+// user wise magazine view history  
+Route::prefix('admin')->middleware(['auth:web'])->group(function () {
+    Route::get('/reports/user-wise-pdf-views', [ReportController::class, 'userWisePdfViews'])
+        ->name('admin.reports.userWisePdfViews');
+
+    Route::get('/reports/user-wise-pdf-views/{customer_id}', [ReportController::class, 'userPdfViewsDetail'])
+        ->name('admin.reports.userPdfViewsDetail');
+});
+
+
+// magazine view by users history 
+Route::prefix('admin')->middleware(['auth:web'])->group(function () {
+
+    Route::get('/reports/magazine-wise-pdf-views', [ReportController::class, 'magazineWisePdfViews'])
+        ->name('admin.reports.magazineWisePdfViews');
+
+    Route::get('/reports/magazine-wise-pdf-views/{magazine_id}', [ReportController::class, 'magazinePdfViewsDetail'])
+        ->name('admin.reports.magazinePdfViewsDetail');
 });

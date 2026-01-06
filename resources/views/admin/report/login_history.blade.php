@@ -3,12 +3,33 @@
 @section('title', isset($customer) ? 'Edit Customer' : 'Add Customer')
 
 @section('content')
-<div class="container">
-    <h3>Login History - {{ $customer->customer_name }} ({{ $customer->customer_id }})</h3>
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
 
-    <a href="{{ route('admin.customers.index') }}" class="btn btn-secondary btn-sm mb-3">Back</a>
+    <h3>Login History </h3>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="mb-3">
+                
+                    <b>{{ $customer->customer_name }}</b> ({{ $customer->customer_id }}) <br>
+                    {{ $customer->customer_mobile }} | {{ $customer->customer_email }}
 
-    <table class="table table-bordered">
+                  </div>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="{{ route('admin.customers.index') . (request()->getQueryString() ? '?' . request()->getQueryString() : '') }}"
+               class="btn btn-secondary btn-sm mb-3">
+                Back
+            </a>
+
+        </div>
+    </div>
+    
+<div class="card">
+    <div class="card-body table-responsive">
+        <table class="table table-bordered align-middle">
+
         <thead>
             <tr>
                 <th>#</th>
@@ -27,4 +48,13 @@
 
     {{ $logs->links() }}
 </div>
+</div>
+<div>
+</div>
+</div>
+</div>
+</div>
+
+
 @endsection
+

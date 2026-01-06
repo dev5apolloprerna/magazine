@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\CustomerAuthController;
 use App\Http\Controllers\Api\CustomerPasswordController;
 use App\Http\Controllers\Api\MagazineApiController;
 use App\Http\Controllers\Api\SubscriptionApiController;
+use App\Http\Controllers\Api\PaymentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,4 +46,12 @@ Route::middleware('auth:api')->group(function () {
     Route::post('magazines/detail', [MagazineApiController::class, 'show']);      // detail
 
     Route::post('my-subscription', [SubscriptionApiController::class, 'index']);      // subscription
+});
+
+
+Route::middleware('auth:api')->group(function () {
+    Route::post('razorpay/create-order', [PaymentController::class, 'createOrder']);
+    Route::post('razorpay/payment-status', [PaymentController::class, 'paymentStatusUpdate']);
+    
+    Route::post('razorpay/verify-renew', [PaymentController::class, 'verifyAndRenew']);
 });
