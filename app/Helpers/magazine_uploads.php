@@ -7,30 +7,30 @@ use Illuminate\Support\Str;
 if (! function_exists('magazine_target_root')) {
     /**
      * Pick the correct disk root for writes:
-     * - If live dir exists (../public_html/anvixa), use that
-     * - Else fallback to local public/anvixa
+     * - If live dir exists (../public_html/magazine), use that
+     * - Else fallback to local public/magazine
      */
     function magazine_target_root(): string
     {
-        $live = anvixa_base_path(); // from your snippet
+        $live = magazine_base_path(); // from your snippet 
         if (File::isDirectory($live)) {
             return $live;
         }
-        return public_path('anvixa');
+        return public_path('magazine');
     }
 }
 
 if (! function_exists('magazine_base_url')) {
     /**
      * Public base URL for the same content.
-     * Uses your anvixa_base_url(), and falls back to app url + /anvixa
+     * Uses your magazine_base_url(), and falls back to app url + /magazine
      */
     function magazine_base_url(string $append = ''): string
     {
-        $base = anvixa_base_url(); // from your snippet
+        $base = magazine_base_url(); // from your snippet
         // If you're running locally and the above already resolves correctly, remove the fallback:
         if (!$base) {
-            $base = rtrim(config('app.url'), '/') . '/anvixa';
+            $base = rtrim(config('app.url'), '/') . '/magazine';
         }
         return $append ? rtrim($base, '/') . '/' . ltrim($append, '/') : rtrim($base, '/');
     }
@@ -38,7 +38,7 @@ if (! function_exists('magazine_base_url')) {
 
 if (! function_exists('magazine_upload')) {
     /**
-     * Move an uploaded file to anvixa/uploads/{subdir}/{filename}
+     * Move an uploaded file to magazine/uploads/{subdir}/{filename}
      * Returns array: [relative, url, filename, mime, size]
      *
      * @param UploadedFile $file
@@ -60,7 +60,7 @@ if (! function_exists('magazine_upload')) {
         }
 
         $root   = magazine_target_root();                                 // filesystem root
-        $dirRel = 'uploads/' . trim($subdir, '/');                   // relative dir under anvixa
+        $dirRel = 'uploads/' . trim($subdir, '/');                   // relative dir under magazine
         $dirAbs = rtrim($root, '/') . '/' . $dirRel;                 // absolute dir
         ensure_dir($dirAbs);                                         // from your snippet
 

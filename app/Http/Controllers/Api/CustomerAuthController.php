@@ -8,6 +8,7 @@ use App\Models\CustomerLoginLog;
 use App\Models\Subscription;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\File;
 use JWTAuth;
 use Carbon\Carbon;
 
@@ -93,5 +94,92 @@ class CustomerAuthController extends Controller
             'customer_list' => $customer,
         ]);
     }
+    
+    public function profile(Request $request)
+    {
+        $customer = auth()->guard('api')->user();
+    
+        if (!$customer) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorised'
+            ], 401);
+        }
+    
+        return response()->json([
+            'status' => true,
+            'message' => 'Customer profile fetched successfully',
+            'data' => [
+                'customer_id'     => $customer->customer_id,
+                'customer_name'   => $customer->customer_name,
+                'customer_mobile' => $customer->customer_mobile,
+                'customer_email'  => $customer->customer_email,
+                'created_at'      => $customer->created_at,
+            ]
+        ]);
+    }
+    
+
+    public function updateProfile(Request $request)
+    {
+        $customer = auth()->guard('api')->user();
+
+        if (!$customer) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorised'
+            ], 401);
+        }
+
+        $request->validate([
+            'customer_name'   => 'required|string|max:255',
+            'customer_mobile' => 'required|digits:10|unique:customer_master,customer_mobile,' . $customer->customer_id . ',customer_id',
+            'customer_email'  => 'required|email|unique:customer_master,customer_email,' . $customer->customer_id . ',customer_id',
+
+            // ✅ image validation
+            'profile_image'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        $customer->customer_name   = $request->customer_name;
+        $customer->customer_mobile = $request->customer_mobile;
+        $customer->customer_email  = $request->customer_email;
+
+        // ✅ Upload profile image if provided
+        if ($request->hasFile('profile_image')) {
+
+            $folderPath = base_path('../public_html/magazine/profile'); // public_html/magazine/profile
+            if (!File::exists($folderPath)) {
+                File::makeDirectory($folderPath, 0755, true);
+            }
+
+            // ✅ Delete old image (if exists)
+            if (!empty($customer->profile_image)) {
+                $oldPath = $folderPath . '/' . $customer->profile_image;
+                if (File::exists($oldPath)) {
+                    File::delete($oldPath);
+                }
+            }
+
+            $image = $request->file('profile_image');
+            $filename = 'cust_' . $customer->customer_id . '_' . time() . '.' . $image->getClientOriginalExtension();
+
+            $image->move($folderPath, $filename);
+
+            // ✅ Save filename in DB column
+            $customer->profile_image = $filename; // change column name if different
+        }
+
+        $customer->save();
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Profile updated successfully',
+            'data'    => $customer,
+            'profile_image_url' => !empty($customer->profile_image)
+                ? asset('/profile/' . $customer->profile_image)
+                : null
+        ]);
+    }
+
 
 }

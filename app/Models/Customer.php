@@ -43,6 +43,19 @@ class Customer extends Authenticatable implements JWTSubject
     {
         return $this->customer_email; // ✅ change this to your column name
     }
+
+   public function loginLogs()
+    {
+        return $this->hasMany(CustomerLoginLog::class, 'customer_id', 'customer_id');
+    }
+
+    public function lastLogin()
+    {
+        return $this->hasOne(CustomerLoginLog::class, 'customer_id', 'customer_id')
+            ->latestOfMany('login_date_time');
+    }
+
+
 }
 
     

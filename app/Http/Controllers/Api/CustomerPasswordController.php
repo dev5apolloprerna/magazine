@@ -149,4 +149,40 @@ class CustomerPasswordController extends Controller
         $raw = $upper . $lower . $digits . $sym . Str::random(max(0, $len - (2 + 4 + 3 + 1)));
         return substr(str_shuffle($raw), 0, $len);
     }
+
+    public function changePassword(Request $request)
+    {
+        $customer = auth()->guard('api')->user();
+
+        if (!$customer) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorised'
+            ], 401);
+        }
+
+        $request->validate([
+            'current_password' => 'required|string|min:6',
+            'new_password'     => 'required|string|min:6|different:current_password|confirmed',
+            // requires: new_password_confirmation
+        ]);
+
+        // ✅ Check current password
+        if (!Hash::check($request->current_password, $customer->password)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Current password is incorrect'
+            ], 422);
+        }
+
+        // ✅ Update password
+        $customer->password = Hash::make($request->new_password);
+        $customer->save();
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Password changed successfully'
+        ]);
+    }
+
 }
