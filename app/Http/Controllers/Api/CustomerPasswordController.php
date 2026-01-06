@@ -137,18 +137,11 @@ class CustomerPasswordController extends Controller
     /**
      * Strong-ish temp password generator
      */
-    private function generateTempPassword(int $len = 10): string
+    private function generateTempPassword(): string
     {
-        // Example: Ab7#kP2!xQ (mix)
-        $upper = Str::upper(Str::random(2));
-        $lower = Str::lower(Str::random(4));
-        $digits = (string) random_int(10 ** 2, (10 ** 3) - 1); // 3 digits
-        $symbols = '!@#$%&*';
-        $sym = $symbols[random_int(0, strlen($symbols) - 1)];
-
-        $raw = $upper . $lower . $digits . $sym . Str::random(max(0, $len - (2 + 4 + 3 + 1)));
-        return substr(str_shuffle($raw), 0, $len);
+        return (string) random_int(100000, 999999);
     }
+
 
     public function changePassword(Request $request)
     {

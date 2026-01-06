@@ -22,6 +22,8 @@ class Customer extends Authenticatable implements JWTSubject
         'customer_mobile',
         'customer_email',
         'password',
+        'login_count',
+        'magazine_count',
         'iStatus'
     ];
 
@@ -54,6 +56,12 @@ class Customer extends Authenticatable implements JWTSubject
         return $this->hasOne(CustomerLoginLog::class, 'customer_id', 'customer_id')
             ->latestOfMany('login_date_time');
     }
+
+    public function magazineLogs()
+    {
+        return $this->hasMany(CustomerMagazineLog::class, 'customer_id', 'customer_id');
+    }
+
 
 
 }

@@ -36,13 +36,18 @@ class CustomerAuthController extends Controller
             return response()->json(['status' => false, 'message' => 'Invalid login credentials'], 401);
         }
 
+        
         $token = JWTAuth::fromUser($customer);
+
+         Customer::where('customer_id', $customer->customer_id)->increment('login_count');
 
         // Log login
         CustomerLoginLog::create([
             'customer_id' => $customer->customer_id,
             'login_date_time' => Carbon::now(),
         ]);
+
+ 
 
         return response()->json([
             'status' => true,

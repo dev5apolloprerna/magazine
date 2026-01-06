@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\MagazineMaster;
 use App\Models\Subscription;
+use App\Models\Customer;
 use App\Models\CustomerMagazineLog;
 use Illuminate\Support\Facades\DB;
 
@@ -210,23 +211,24 @@ class MagazineApiController extends Controller
             ], 403);
         }
 
-        // ✅ LOG MAGAZINE CLICK (increment clicked_count)
-        DB::transaction(function () use ($mag, $customerId) {
-            $log = CustomerMagazineLog::where('magazine_id', $mag->id)
-                ->where('customer_id', $customerId)
-                ->lockForUpdate()
-                ->first();
+        /*$log = CustomerMagazineLog::firstOrCreate(
+                ['customer_id' => $customerId, 'magazine_id' => $mag->id],
+                ['clicked_count' => 0]
+            );
 
-            if ($log) {
-                $log->increment('clicked_count');
-            } else {
-                CustomerMagazineLog::create([
-                    'magazine_id' => $mag->id,
-                    'customer_id' => $customerId,
-                    'clicked_count' => 1,
-                ]);
-            }
-        });
+        $log->increment('clicked_count');*/
+
+        Customer::where('customer_id', $customerId)->increment('magazine_count');
+
+        // ✅ Magazine total views
+        MagazineMaster::where('id', $mag->id)->increment('magazine_count');
+
+        // ✅ Insert log row (history)
+        CustomerMagazineLog::create([
+            'magazine_id' => $mag->id,
+            'customer_id' => $customerId,
+            'date_time'   => now(),
+        ]);
 
         return response()->json([
             'success' => true,

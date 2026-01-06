@@ -8,11 +8,15 @@ class CustomerMagazineLog extends Model
 {
     protected $table = 'customer_magazine_log';
     protected $primaryKey = 'logid';
-    public $timestamps = false; // set true only if you have created_at/updated_at
+    public $timestamps = false;
 
     protected $fillable = [
         'magazine_id',
         'customer_id',
-        'clicked_count',
+        'date_time',
+    ];
+
+    protected $casts = [
+        'date_time' => 'datetime',
     ];
 }
