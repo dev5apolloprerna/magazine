@@ -16,6 +16,7 @@ class PaymentController extends Controller
         public function createOrder(Request $request)
         {
             $user = auth()->guard('api')->user();
+          
             if (!$user) {
                 return response()->json(['success' => false, 'message' => 'Unauthorised'], 401);
             }
@@ -34,8 +35,8 @@ class PaymentController extends Controller
             $amount = (float) $plan->plan_amount;
             $days   = (int) $plan->days;
 
-            try {
-                $api = new \Razorpay\Api\Api(config('services.razorpay.key'), config('services.razorpay.secret'));
+            /*try {*/
+            $api = new Api(config('services.razorpay.key'), config('services.razorpay.secret'));
 
                 $receipt = 'rcpt_' . $customerId . '_' . time();
 
@@ -70,83 +71,68 @@ class PaymentController extends Controller
                     ]
                 ]);
 
-            } catch (\Exception $e) {
+            /*} catch (\Exception $e) {
                 return response()->json([
                     'success' => false,
                     'message' => $e->getMessage(),
                 ], 422);
-            }
+            }*/
         }
 
         public function paymentStatusUpdate(Request $request)
         {
-            // accept both Customer_id and customer_id
-            $customerId = $request->input('customer_id', $request->input('Customer_id'));
-            $status     = $request->input('status'); // "Success" / "Failed" etc.
-
-            $rzpOrderId   = $request->input('razorpay_order_id');
-            $rzpPaymentId = $request->input('razorpay_payment_id');
-            $rzpSignature = $request->input('razorpay_signature');
-
-            // local order id from app (optional)
-            $localOrderId = $request->input('order_id'); // e.g. 69
-
             $request->validate([
-                'status'             => 'required|string',
-                'razorpay_order_id'  => 'required|string',
-                'razorpay_payment_id'=> 'required|string',
-                'razorpay_signature' => 'required|string',
+                'customer_id'          => 'required|integer',
+                'status'               => 'required|string',
+                'order_id'             => 'required|string', // ✅ Razorpay order id
+                'razorpay_payment_id'  => 'required|string',
+                'razorpay_signature'   => 'required|string',
+                'amount'               => 'nullable',
+                'currency'             => 'nullable|string',
+                'json'                 => 'nullable|string',
             ]);
-
-            if (empty($customerId)) {
-                return response()->json(['success' => false, 'message' => 'customer_id is required'], 422);
-            }
-
-            // ✅ Find order row from DB (prefer razorpay order id)
+        
+            $customerId    = $request->customer_id;
+            $status        = $request->status;
+            $rzpOrderId    = $request->order_id; // ✅ from app (razorpay order id)
+            $rzpPaymentId  = $request->razorpay_payment_id;
+            $rzpSignature  = $request->razorpay_signature;
+        
+            // ✅ Find order row by razorpay order id
             $orderRow = RazorpayOrder::where('order_id', $rzpOrderId)->first();
-
-            // fallback: if app sends your internal id in order_id
-            if (!$orderRow && !empty($localOrderId)) {
-                $orderRow = RazorpayOrder::where('id', $localOrderId)->first();
-                // if found but order_id mismatch, reject
-                if ($orderRow && $orderRow->order_id !== $rzpOrderId) {
-                    return response()->json(['success' => false, 'message' => 'Order mismatch'], 422);
-                }
-            }
-
             if (!$orderRow) {
                 return response()->json(['success' => false, 'message' => 'Order not found'], 404);
             }
-
-            // ✅ Customer match
+        
+            // ✅ Customer check
             if ((string)$orderRow->customer_id !== (string)$customerId) {
                 return response()->json(['success' => false, 'message' => 'Customer mismatch'], 422);
             }
-
-            // ✅ If already paid, return success (idempotent)
+        
+            // ✅ Already paid (idempotent)
             if ($orderRow->status === 'paid') {
                 return response()->json([
                     'success' => true,
                     'message' => 'Already updated',
                 ]);
             }
-
-            // If app says failed, mark failed and stop
+        
+            // ✅ If app says failed
             if (strtolower($status) !== 'success') {
-                $orderRow->status = 'failed';
+                $orderRow->status     = 'failed';
                 $orderRow->payment_id = $rzpPaymentId;
                 $orderRow->signature  = $rzpSignature;
                 $orderRow->save();
-
+        
                 return response()->json([
                     'success' => true,
                     'message' => 'Payment marked as failed',
                 ]);
             }
-
-            // ✅ Verify Razorpay signature
+        
+            // ✅ Verify signature (IMPORTANT)
             $api = new Api(config('services.razorpay.key'), config('services.razorpay.secret'));
-
+        
             try {
                 $api->utility->verifyPaymentSignature([
                     'razorpay_order_id'   => $rzpOrderId,
@@ -156,14 +142,14 @@ class PaymentController extends Controller
             } catch (SignatureVerificationError $e) {
                 $orderRow->status = 'failed';
                 $orderRow->save();
-
+        
                 return response()->json([
                     'success' => false,
                     'message' => 'Signature verification failed',
                 ], 422);
             }
-
-            // ✅ Recommended: Check payment status from Razorpay
+        
+            // ✅ Check payment status from Razorpay (Recommended)
             $payment = $api->payment->fetch($rzpPaymentId);
             if (($payment['status'] ?? '') !== 'captured') {
                 return response()->json([
@@ -171,51 +157,51 @@ class PaymentController extends Controller
                     'message' => 'Payment not captured yet',
                 ], 422);
             }
-
+        
             // ✅ Renew subscription using plan_id from razorpay_orders
             $planId = $orderRow->plan_id;
-
+        
             $plan = DB::table('plan_master')->where('plan_id', $planId)->first();
             if (!$plan) {
                 return response()->json(['success' => false, 'message' => 'Plan not found'], 404);
             }
-
+        
             $days   = (int) $plan->days;
-            $amount = (float) $plan->amount;
-
+            $amount = (float) $plan->plan_amount;
+        
             DB::transaction(function () use ($orderRow, $rzpPaymentId, $rzpSignature, $customerId, $planId, $days, $amount) {
-
-                // update order
+        
+                // ✅ Update order table
                 $orderRow->payment_id = $rzpPaymentId;
                 $orderRow->signature  = $rzpSignature;
                 $orderRow->status     = 'paid';
                 $orderRow->save();
-
-                // active subscription (if any)
+        
+                // ✅ active subscription
                 $activeSub = DB::table('subscription_master')
                     ->where('customer_id', $customerId)
                     ->where('isActive', 1)
                     ->orderByDesc('subscription_id')
                     ->first();
-
+        
                 $today = Carbon::today();
-
+        
                 // if active and not expired => start after end_date else start today
                 if ($activeSub && !empty($activeSub->end_date) && Carbon::parse($activeSub->end_date)->gte($today)) {
                     $startDate = Carbon::parse($activeSub->end_date)->addDay();
                 } else {
                     $startDate = $today;
                 }
-
+        
                 // end_date inclusive
                 $endDate = (clone $startDate)->addDays(max(0, $days - 1));
-
+        
                 // deactivate old
                 DB::table('subscription_master')
                     ->where('customer_id', $customerId)
                     ->where('isActive', 1)
                     ->update(['isActive' => 0]);
-
+        
                 // insert new subscription
                 DB::table('subscription_master')->insert([
                     'customer_id' => $customerId,
@@ -227,16 +213,16 @@ class PaymentController extends Controller
                     'isActive'    => 1,
                 ]);
             });
-
+        
             return response()->json([
                 'success' => true,
-                'message' => 'Payment updated and subscription renewed',
+                'message' => 'Payment Status Updated Successfully',
                 'data' => [
-                    'customer_id' => (int)$customerId,
-                    'plan_id'     => (int)$planId,
-                    'razorpay_order_id'   => $rzpOrderId,
-                    'razorpay_payment_id' => $rzpPaymentId,
-                    'status'      => 'paid',
+                    'customer_id'          => (int) $customerId,
+                    'plan_id'              => (int) $planId,
+                    'order_id'             => $rzpOrderId,
+                    'razorpay_payment_id'  => $rzpPaymentId,
+                    'status'               => 'paid',
                 ]
             ]);
         }

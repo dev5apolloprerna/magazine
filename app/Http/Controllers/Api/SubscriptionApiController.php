@@ -43,7 +43,7 @@ class SubscriptionApiController extends Controller
             ->orderByDesc('end_date')
             ->first();*/
     }
-    private function subscriptionInfo(?Subscription $sub): array
+    /*private function subscriptionInfo(?Subscription $sub): array
     {
         if (!$sub) {
             return [
@@ -65,9 +65,50 @@ class SubscriptionApiController extends Controller
             'start_date' => $sub->start_date,
             'end_date' => $sub->end_date,
             'days_left' => $today->lte($end) ? $today->diffInDays($end) : 0,
-            'plan_id' => $sub->plan_id,
-            'plan_name' => $sub->Plan->plan_name,
-            'amount' => $sub->amount,
+            'plan_id' => $sub->plan_id ?? '',
+            'plan_name' => $sub->Plan->plan_name ?? '',
+            'amount' => $sub->amount ?? '',
+        ];
+    }*/
+    private function subscriptionInfo(?Subscription $sub): array
+    {
+        if (!$sub) {
+            return [
+                'status' => 'none',
+                'start_date' => null,
+                'end_date' => null,
+                'days_left' => null,
+                'plan_id' => null,
+                'plan_name' => null,
+                'amount' => null,
+            ];
+        }
+    
+        $today = Carbon::today()->startOfDay();
+        $start = Carbon::parse($sub->start_date)->startOfDay();
+        $end   = Carbon::parse($sub->end_date)->endOfDay();
+    
+        // ✅ status: upcoming / active / expired
+        if ($today->lt($start)) {
+            $status = 'upcoming';
+            $daysLeft = 0;
+        } elseif ($today->gt($end)) {
+            $status = 'expired';
+            $daysLeft = 0;
+        } else {
+            $status = 'active';
+            $daysLeft = $today->diffInDays($end) + 1; // ✅ inclusive
+        }
+    
+        return [
+            'status' => $status,
+            'start_date' => $sub->start_date,
+            'end_date' => $sub->end_date,
+            'days_left' => $daysLeft,
+            'plan_id' => $sub->plan_id ?? '',
+            'plan_name' => optional($sub->Plan)->plan_name ?? '', // safer
+            'amount' => $sub->amount ?? '',
         ];
     }
+
 }
