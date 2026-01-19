@@ -101,20 +101,26 @@ class MagazineApiController extends Controller
                 'message' => 'Unauthorised'
             ], 401);
         }
-        $plans = Plan::where(["iStatus"=>1,"isDelete"=> 0])
+    
+        $customerId = $user->customer_id ?? $user->id;
+    
+        // ✅ get current active plan_id for this customer
+        $activePlanId = Subscription::where('customer_id', $customerId)
+            ->where('isActive', 1)
+            ->orderByDesc('subscription_id')
+            ->value('plan_id'); // returns plan_id or null
+    
+        $plans = Plan::where(['iStatus' => 1, 'isDelete' => 0])
             ->select('plan_id', 'plan_name', 'plan_amount', 'days')
-            ->get();
-        if ($plans->isEmpty()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'No plans available',
-                'data'    => []
-            ]);
-        }
+            ->get()
+            ->map(function ($p) use ($activePlanId) {
+                $p->is_active_plan = ((int)$p->plan_id === (int)$activePlanId) ? 1 : 0;
+                return $p;
+            });
     
         return response()->json([
             'success' => true,
-            'message' => 'Plan list fetched successfully',
+            'message' => $plans->isEmpty() ? 'No plans available' : 'Plan list fetched successfully',
             'data'    => $plans
         ]);
     }
