@@ -59,7 +59,7 @@
                             <span class="text-danger">{{ $errors->first('month') }}</span>
                         @endif
                     </div>-->
-                    <div class="col-md-6 mb-4">
+                    <!--<div class="col-md-6 mb-4">
                         <label class="form-label">
                             Month <span style="color:red;">*</span>
                         </label>
@@ -105,6 +105,13 @@
                         <input type="number" name="year" class="form-control" value="{{ old('year', $magazine->year ?? '') }}">
                         @if($errors->has('year'))
                             <span class="text-danger">{{ $errors->first('year') }}</span>
+                        @endif
+                    </div>-->
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Publish Date <span style="color:red;">*</span></label>
+                        <input type="date" name="publish_date" class="form-control" value="{{ old('year', $magazine->publish_date ?? '') }}">
+                        @if($errors->has('publish_date'))
+                            <span class="text-danger">{{ $errors->first('publish_date') }}</span>
                         @endif
                     </div>
                     <div class="col-md-6 mb-4">

@@ -27,10 +27,13 @@ class MagazineController extends Controller
             'title' => 'required|string|max:200',
             'image' => 'required|image|mimes:jpg,jpeg,png,webp,gif|max:2048',
             'pdf'   => 'required|mimes:pdf|max:10240',
-            'month' => 'required|string|max:100',
-            'year'  => 'required|numeric',
+            'publish_date' => 'required',
+            // 'year'  => 'required|numeric',
         ]);
 
+            $month = (int) date('m', strtotime($request->publish_date));
+            $year=date('Y',strtotime($request->publish_date));
+            
         // ✅ upload into public_html/magazine/uploads/images and uploads/pdfs
         $imagePath = $this->uploadFile($request->file('image'), 'images');
         $pdfPath   = $this->uploadFile($request->file('pdf'), 'pdfs');
@@ -39,8 +42,9 @@ class MagazineController extends Controller
             'title'   => $request->title,
             'image'   => $imagePath, // ex: uploads/images/xxx.jpg
             'pdf'     => $pdfPath,   // ex: uploads/pdfs/xxx.pdf
-            'month'   => $request->month,
-            'year'    => $request->year,
+            'month'   => $month,
+            'year'    => $year,
+            'publish_date' =>$request->publish_date,
             'iStatus' => $request->has('iStatus') ? 1 : 0,
             'isDelete'=> 0,
         ]);
@@ -60,8 +64,8 @@ class MagazineController extends Controller
 
         $request->validate([
             'title' => 'required|string|max:200',
-            'month' => 'required|string|max:100',
-            'year'  => 'required|numeric',
+            'publish_date' => 'required',
+            // 'year'  => 'required|numeric',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:2048',
             'pdf'   => 'nullable|mimes:pdf|max:10240',
         ]);
@@ -76,9 +80,13 @@ class MagazineController extends Controller
             $magazine->pdf = $this->uploadFile($request->file('pdf'), 'pdfs');
         }
 
+            $month = (int) date('m', strtotime($request->publish_date));
+            $year=date('Y',strtotime($request->publish_date));
+            
         $magazine->title   = $request->title;
-        $magazine->month   = $request->month;
-        $magazine->year    = $request->year;
+        $magazine->month   = $month;
+        $magazine->year    = $year;
+        $magazine->publish_date    = $request->publish_date;
         $magazine->iStatus = $request->has('iStatus') ? 1 : 0;
         $magazine->save();
 
