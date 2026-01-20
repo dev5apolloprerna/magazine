@@ -46,7 +46,7 @@
                                                 <td><a href="{{ asset($magazine->pdf) }}" target="_blank">View PDF</a></td>
                                                 <td>{{ $magazine->month }}</td>
                                                 <td>{{ $magazine->year }}</td>
-                                                <td>{{ \Carbon\Carbon::parse($magazine->created_at)->format('d M Y') }}</td>
+                                                <td>{{ \Carbon\Carbon::parse($magazine->publish_date)->format('d M Y') }}</td>
                                                 <!--<td>
                                                     <input type="checkbox" class="toggle-status" data-id="{{ $magazine->id }}" {{ $magazine->iStatus ? 'checked' : '' }}>
                                                 </td>-->

@@ -17,6 +17,7 @@ class MagazineMaster extends Model
         'pdf',
         'month',
         'year',
+        'publish_date',
         'iStatus',
         'isDelete',
     ];

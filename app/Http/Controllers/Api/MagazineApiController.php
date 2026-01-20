@@ -61,22 +61,25 @@ class MagazineApiController extends Controller
             ->orderByDesc('id')
             ->get();
 
-        $data = $magazines->map(function ($m) use ($sub) 
+        $data = $magazines->map(function ($m) use ($customerId) 
         {
-            $access = $this->magazineAccess($m, $sub);
+        
+            $access = $this->magazineAccess($m, (int) $customerId);
 
             return [
                 'id'          => $m->id,
                 'title'       => $m->title,
                 'month'       => $m->month,
                 'year'        => $m->year,
+                'created_at'  => $m->publish_date,
                 'image_url'   => magazine_base_url($m->image),
                 'can_view'    => $access['can_view'],
                 'lock_reason' => $access['reason'],
-                // ✅ optional: hide pdf_url if locked
                 'pdf_url'     => $access['can_view'] ? magazine_base_url($m->pdf) : null,
             ];
+
         })->values();
+
         if ($data->isEmpty()) {
             return response()->json([
                 'success' => false,
@@ -92,7 +95,7 @@ class MagazineApiController extends Controller
         ]);
     }
     
-    public function plan_list(Request $request)
+   public function plan_list(Request $request)
     {
         $user = auth()->guard('api')->user();
         if (!$user) {
@@ -124,6 +127,7 @@ class MagazineApiController extends Controller
             'data'    => $plans
         ]);
     }
+
     
     
     public function index(Request $request)
@@ -148,10 +152,11 @@ class MagazineApiController extends Controller
             ->orderByDesc('id')
             ->get();
 
-        $data = $magazines->map(function ($m) use ($sub) 
-        {
-            $access = $this->magazineAccess($m, $sub);
 
+        $data = $magazines->map(function ($m) use ($customerId) {
+        
+            $access = $this->magazineAccess($m, (int) $customerId);
+        
             return [
                 'id'          => $m->id,
                 'title'       => $m->title,
@@ -160,10 +165,10 @@ class MagazineApiController extends Controller
                 'image_url'   => magazine_base_url($m->image),
                 'can_view'    => $access['can_view'],
                 'lock_reason' => $access['reason'],
-                // ✅ optional: hide pdf_url if locked
                 'pdf_url'     => $access['can_view'] ? magazine_base_url($m->pdf) : null,
             ];
         })->values();
+
 
         return response()->json([
             'success' => true,
@@ -198,7 +203,8 @@ class MagazineApiController extends Controller
             ->where('iStatus', 1)
             ->findOrFail($id);
 
-        $access = $this->magazineAccess($mag, $sub);
+        //$access = $this->magazineAccess($mag, $sub);
+        $access = $this->magazineAccess($mag, (int) $customerId);
 
         if (!$access['can_view']) {
             return response()->json([
@@ -300,31 +306,32 @@ class MagazineApiController extends Controller
      * LIST: show all but can_view false for locked
      * DETAIL: block if can_view false
      */
-    private function magazineAccess($mag, ?Subscription $sub): array
-    {
-        if (!$sub) {
-            return ['can_view' => false, 'reason' => 'no_subscription'];
-        }
+    private function magazineAccess($mag, int $customerId): array
+{
+        $issueDate = \Carbon\Carbon::parse($mag->publish_date)->startOfDay();
 
-        $issueDate = $this->issueDate($mag);
-        if (!$issueDate) {
-            return ['can_view' => false, 'reason' => 'invalid_magazine_date'];
-        }
-
-        $start = Carbon::parse($sub->start_date)->startOfDay();
-        $end   = Carbon::parse($sub->end_date)->endOfDay(); // ✅ include end date fully
-
-        // ✅ allow only between start_date and end_date (inclusive)
-        if ($issueDate->lt($start)) {
-            return ['can_view' => false, 'reason' => 'before_subscription'];
-        }
-
-        if ($issueDate->gt($end)) {
-            return ['can_view' => false, 'reason' => 'after_end_date'];
-        }
-
-        return ['can_view' => true, 'reason' => null];
+    //$issueDate = $this->issueDate($mag);
+    if (!$issueDate) {
+        return ['can_view' => false, 'reason' => 'invalid_magazine_date'];
     }
+
+
+    // ✅ check subscription that has *not yet expired* and covers old magazines
+    $sub = Subscription::where('customer_id', $customerId)
+        ->where('iStatus', 1)
+        ->where('isDelete', 0)
+        ->whereDate('end_date', '>=', $issueDate->toDateString()) // <= This is the key change
+        ->orderByDesc('end_date')
+        ->first();
+
+    if (!$sub) {
+        return ['can_view' => false, 'reason' => 'no_subscription_for_issue'];
+    }
+
+    return ['can_view' => true, 'reason' => null];
+}
+
+
 
     private function issueDate($m): ?Carbon
     {
