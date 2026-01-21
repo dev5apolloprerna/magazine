@@ -32,6 +32,15 @@ class Customer extends Authenticatable implements JWTSubject
 
     public $timestamps = true;
 
+    public function subscription()
+    {
+        return $this->hasOne(Subscription::class, 'customer_id', 'customer_id')
+                    ->where('isDelete', 0)
+                    ->latestOfMany('subscription_id'); // gets the latest subscription if multiple
+    }
+
+    
+
     public function getJWTIdentifier()
     {
         return $this->getKey();

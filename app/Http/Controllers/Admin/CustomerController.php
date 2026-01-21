@@ -119,16 +119,18 @@ class CustomerController extends Controller
         $next7 = Carbon::today()->addDays(7);
 
         // Subscribed = active (end_date >= today)
-        $subscribed = Customer::select('customer_master.*', 'subscription_master.start_date', 'subscription_master.end_date')
+        $subscribed = Customer::select('customer_master.*', 'subscription_master.start_date', 'subscription_master.end_date','subscription_master.amount','plan_master.plan_name','subscription_master.days')
             ->join('subscription_master', 'subscription_master.customer_id', '=', 'customer_master.customer_id')
+            ->leftJoin('plan_master', 'plan_master.plan_id', '=', 'subscription_master.plan_id')
             ->where('subscription_master.end_date', '>=', $today)
             ->where('subscription_master.isDelete', 0)
             ->where('customer_master.isDelete', 0)
             ->get();
 
         // Renewal = end_date within next 7 days
-        $renewal = Customer::select('customer_master.*', 'subscription_master.start_date', 'subscription_master.end_date')
+        $renewal = Customer::select('customer_master.*', 'subscription_master.start_date', 'subscription_master.end_date','subscription_master.amount','plan_master.plan_name','subscription_master.days')
             ->join('subscription_master', 'subscription_master.customer_id', '=', 'customer_master.customer_id')
+            ->leftJoin('plan_master', 'plan_master.plan_id', '=', 'subscription_master.plan_id')
             ->whereBetween('subscription_master.end_date', [$today, $next7])
             ->where('subscription_master.isDelete', 0)
             ->where('customer_master.isDelete', 0)

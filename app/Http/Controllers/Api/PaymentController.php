@@ -84,9 +84,9 @@ class PaymentController extends Controller
             $request->validate([
                 'customer_id'          => 'required|integer',
                 'status'               => 'required|string',
-                'order_id'             => 'required|string', // ✅ Razorpay order id
-                'razorpay_payment_id'  => 'required|string',
-                'razorpay_signature'   => 'required|string',
+                //'order_id'             => 'required|string', // ✅ Razorpay order id
+                //'razorpay_payment_id'  => 'required|string',
+                //'razorpay_signature'   => 'required|string',
                 'amount'               => 'nullable',
                 'currency'             => 'nullable|string',
                 'json'                 => 'nullable|string',
@@ -140,7 +140,7 @@ class PaymentController extends Controller
                     'razorpay_signature'  => $rzpSignature,
                 ]);
             } catch (SignatureVerificationError $e) {
-                $orderRow->status = 'failed';
+                $orderRow->status = 'Fail';
                 $orderRow->save();
         
                 return response()->json([
@@ -328,22 +328,35 @@ class PaymentController extends Controller
                 // end_date inclusive
                 $endDate = (clone $startDate)->addDays(max(0, $days - 1));
 
-                // deactivate old
-                DB::table('subscription_master')
-                    ->where('customer_id', $customerId)
-                    ->where('isActive', 1)
-                    ->update(['isActive' => 0]);
-
-                // insert new subscription
+                //new code
+                $today = Carbon::today()->startOfDay();
+                $newIsActive = $startDate->startOfDay()->lte($today) && $endDate->endOfDay()->gte($today); // true only if starts today
+                
+                // ✅ Only deactivate old active subscription if new one is active TODAY
+                if ($newIsActive) {
+                    DB::table('subscription_master')
+                        ->where('customer_id', $customerId)
+                        ->where('isActive', 1)
+                        ->update(['isActive' => 0]);
+                }
+                
+                // ✅ Insert new subscription (upcoming will be isActive=0)
                 DB::table('subscription_master')->insert([
                     'customer_id' => $customerId,
-                    'plan_id'     => $request->plan_id,
+                    'plan_id'     => $planId,
                     'start_date'  => $startDate->toDateString(),
                     'end_date'    => $endDate->toDateString(),
                     'days'        => $days,
                     'amount'      => $amount,
-                    'isActive'    => 1,
+                    'isActive'    => $newIsActive ? 1 : 0,
+                
+                    // if these columns exist in your table (your screenshot shows them)
+                    'iStatus'     => 1,
+                    'isDelete'    => 0,
+                    'created_at'  => now(),
+                    'updated_at'  => now(),
                 ]);
+
             });
 
             return response()->json([

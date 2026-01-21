@@ -38,6 +38,8 @@ class CustomerAuthController extends Controller
 
         
         $token = JWTAuth::fromUser($customer);
+        $customerId=$customer->customer_id;
+        $this->refreshActiveSubscription($customerId);
 
          Customer::where('customer_id', $customer->customer_id)->increment('login_count');
 
@@ -120,6 +122,9 @@ class CustomerAuthController extends Controller
                 'customer_mobile' => $customer->customer_mobile,
                 'customer_email'  => $customer->customer_email,
                 'created_at'      => $customer->created_at,
+                'profile_image_url' => !empty($customer->profile_image)
+                ? asset('/profile/' . $customer->profile_image)
+                : null
             ]
         ]);
     }
@@ -186,5 +191,21 @@ class CustomerAuthController extends Controller
         ]);
     }
 
+    private function refreshActiveSubscription(int $customerId): void
+    {
+        $today = Carbon::today()->toDateString();
+    
+        DB::table('subscription_master')
+            ->where('customer_id', $customerId)
+            ->update(['isActive' => 0]);
+    
+        DB::table('subscription_master')
+            ->where('customer_id', $customerId)
+            ->whereDate('start_date', '<=', $today)
+            ->whereDate('end_date', '>=', $today)
+            ->orderByDesc('end_date')
+            ->limit(1)
+            ->update(['isActive' => 1]);
+    }
 
 }
