@@ -86,7 +86,6 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 });
 
 
-// user login log history 
 Route::prefix('admin')->middleware(['auth'])->group(function () 
 {
     Route::get('/customers', [ReportController::class, 'index'])->name('admin.customers.index');
@@ -96,7 +95,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function ()
 
 });
 
-// user wise magazine view history  
+
 Route::prefix('admin')->middleware(['auth:web'])->group(function () {
     Route::get('/reports/user-wise-pdf-views', [ReportController::class, 'userWisePdfViews'])
         ->name('admin.reports.userWisePdfViews');
@@ -106,7 +105,6 @@ Route::prefix('admin')->middleware(['auth:web'])->group(function () {
 });
 
 
-// magazine view by users history 
 Route::prefix('admin')->middleware(['auth:web'])->group(function () {
 
     Route::get('/reports/magazine-wise-pdf-views', [ReportController::class, 'magazineWisePdfViews'])

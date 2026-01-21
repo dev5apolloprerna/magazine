@@ -49,9 +49,9 @@ Route::middleware('auth:api')->group(function () {
 });
 
 
+
 Route::middleware('auth:api')->group(function () {
     Route::post('razorpay/create-order', [PaymentController::class, 'createOrder']);
     Route::post('razorpay/payment-status', [PaymentController::class, 'paymentStatusUpdate']);
-    
     Route::post('razorpay/verify-renew', [PaymentController::class, 'verifyAndRenew']);
 });

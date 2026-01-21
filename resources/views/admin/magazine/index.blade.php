@@ -32,7 +32,7 @@
                                                 <th>PDF</th>
                                                 <th>Month</th>
                                                 <th>Year</th>
-                                                <th>Created Date</th>
+                                                <th>Publish Date</th>
                                                 <th>Status</th>
                                                 <th>Action</th>
                                             </tr>

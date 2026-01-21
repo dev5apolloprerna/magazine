@@ -29,8 +29,11 @@ class MagazineApiController extends Controller
                 'message' => 'Unauthorised'
             ], 401);
         }
-
         $customerId = $user->customer_id ?? $user->id;
+        
+        $this->refreshActiveSubscription($customerId);
+
+
         // dd($customerId); 
         $sub = $this->latestSubscription($customerId);
         $subInfo = $this->subscriptionInfo($sub);
@@ -59,7 +62,9 @@ class MagazineApiController extends Controller
             ->orderByDesc('year')
             ->orderByRaw("FIELD(month,'December','November','October','September','August','July','June','May','April','March','February','January')")
             ->orderByDesc('id')
+            ->limit(10)
             ->get();
+
 
         $data = $magazines->map(function ($m) use ($customerId) 
         {
@@ -354,4 +359,21 @@ class MagazineApiController extends Controller
             return null;
         }
     }
+    private function refreshActiveSubscription(int $customerId): void
+    {
+        $today = Carbon::today()->toDateString();
+    
+        DB::table('subscription_master')
+            ->where('customer_id', $customerId)
+            ->update(['isActive' => 0]);
+    
+        DB::table('subscription_master')
+            ->where('customer_id', $customerId)
+            ->whereDate('start_date', '<=', $today)
+            ->whereDate('end_date', '>=', $today)
+            ->orderByDesc('end_date')
+            ->limit(1)
+            ->update(['isActive' => 1]);
+    }
+
 }
