@@ -7,7 +7,10 @@
         <div class="container-fluid">
             {{-- Alert Messages --}}
             @include('common.alert')
+            <div class="card">
+                <div class="card-body">
             <div class="row">
+                
                 <div class="col-12">
                     <div class="page-title-box d-sm-flex align-items-center justify-content-between">
                         <h4 class="mb-sm-0">{{ isset($magazine) ? 'Edit' : 'Add' }} Magazine</h4>
@@ -42,7 +45,7 @@
                             <span class="text-danger">{{ $errors->first('image') }}</span>
                         @endif
                     </div>
-                    <div class="col-md-6 mb-4">
+                    <!--<div class="col-md-6 mb-4">
                         <label class="form-label">PDF <span style="color:red;">*</span></label>
                         <input type="file" name="pdf" class="form-control">
                         @if(isset($magazine) && $magazine->pdf)
@@ -51,7 +54,7 @@
                         @if($errors->has('pdf'))
                             <span class="text-danger">{{ $errors->first('pdf') }}</span>
                         @endif
-                    </div>
+                    </div>-->
                     <!--<div class="col-md-6 mb-4">
                         <label class="form-label">Month <span style="color:red;">*</span></label>
                         <input type="text" name="month" class="form-control" value="{{ old('month', $magazine->month ?? '') }}">
@@ -125,5 +128,7 @@
             </form>
         </div>
     </div>
+</div>
+</div>
 </div>
 @endsection

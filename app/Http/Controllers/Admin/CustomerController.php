@@ -40,6 +40,7 @@ class CustomerController extends Controller
             'customer_mobile' => 'required',
             'customer_email'  => 'required|email|unique:customer_master,customer_email',
             'password'        => 'required|min:6',
+            'free_article'        => 'required',
         ]);
 
         Customer::create([
@@ -47,6 +48,7 @@ class CustomerController extends Controller
             'customer_mobile' => $request->customer_mobile,
             'customer_email'  => $request->customer_email,
             'password'        => Hash::make($request->password),
+            'free_article'=>$request->free_article,
             'iStatus'         => $request->has('iStatus') ? 1 : 0,
         ]);
 
@@ -68,11 +70,14 @@ class CustomerController extends Controller
             'customer_mobile' => 'required',
             'customer_email'  => 'required|email|unique:customer_master,customer_email,' . $id . ',customer_id',
             'password'        => 'nullable|min:6',
+            'free_article'        => 'required',
+            
         ]);
 
         $customer->customer_name   = $request->customer_name;
         $customer->customer_mobile = $request->customer_mobile;
         $customer->customer_email  = $request->customer_email;
+        $customer->free_article  = $request->free_article;
 
         if ($request->password) {
             $customer->password = Hash::make($request->password);

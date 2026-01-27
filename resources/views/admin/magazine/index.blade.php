@@ -29,7 +29,7 @@
                                                 <th><input type="checkbox" id="checkAll"></th>
                                                 <th>Title</th>
                                                 <th>Image</th>
-                                                <th>PDF</th>
+                                                <!--<th>PDF</th>-->
                                                 <th>Month</th>
                                                 <th>Year</th>
                                                 <th>Publish Date</th>
@@ -43,7 +43,7 @@
                                                 <td><input type="checkbox" name="ids[]" value="{{ $magazine->id }}"></td>
                                                 <td>{{ $magazine->title }}</td>
                                                 <td><img src="{{ asset($magazine->image) }}" alt="" width="60"></td>
-                                                <td><a href="{{ asset($magazine->pdf) }}" target="_blank">View PDF</a></td>
+                                                <!--<td><a href="{{ asset($magazine->pdf) }}" target="_blank">View PDF</a></td>-->
                                                 <td>{{ $magazine->month }}</td>
                                                 <td>{{ $magazine->year }}</td>
                                                 <td>{{ \Carbon\Carbon::parse($magazine->publish_date)->format('d M Y') }}</td>

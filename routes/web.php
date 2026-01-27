@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\MagazineController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\ArticleMasterController;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -112,4 +113,18 @@ Route::prefix('admin')->middleware(['auth:web'])->group(function () {
 
     Route::get('/reports/magazine-wise-pdf-views/{magazine_id}', [ReportController::class, 'magazinePdfViewsDetail'])
         ->name('admin.reports.magazinePdfViewsDetail');
+});
+
+
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('articles', [ArticleMasterController::class, 'index'])->name('articles.index');
+    Route::get('articles/create', [ArticleMasterController::class, 'create'])->name('articles.create');
+    Route::post('articles', [ArticleMasterController::class, 'store'])->name('articles.store');
+    Route::get('articles/{id}/edit', [ArticleMasterController::class, 'edit'])->name('articles.edit');
+    Route::post('articles/{id}', [ArticleMasterController::class, 'update'])->name('articles.update');
+    Route::delete('articles/{id}', [ArticleMasterController::class, 'destroy'])->name('articles.destroy');
+
+
+    Route::post('articles/{id}/toggle-status', [ArticleMasterController::class, 'toggleStatus'])->name('articles.toggle-status');
 });

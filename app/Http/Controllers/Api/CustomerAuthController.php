@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
 use JWTAuth;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class CustomerAuthController extends Controller
 {
