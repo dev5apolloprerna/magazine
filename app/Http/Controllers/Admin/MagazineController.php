@@ -26,7 +26,7 @@ class MagazineController extends Controller
         $request->validate([
             'title' => 'required|string|max:200',
             'image' => 'required|image|mimes:jpg,jpeg,png,webp,gif|max:2048',
-            'pdf'   => 'required|mimes:pdf|max:10240',
+            // 'pdf'   => 'required|mimes:pdf|max:10240',
             'publish_date' => 'required',
             // 'year'  => 'required|numeric',
         ]);
@@ -36,12 +36,12 @@ class MagazineController extends Controller
             
         // ✅ upload into public_html/magazine/uploads/images and uploads/pdfs
         $imagePath = $this->uploadFile($request->file('image'), 'images');
-        $pdfPath   = $this->uploadFile($request->file('pdf'), 'pdfs');
+        //$pdfPath   = $this->uploadFile($request->file('pdf'), 'pdfs');
 
         MagazineMaster::create([
             'title'   => $request->title,
             'image'   => $imagePath, // ex: uploads/images/xxx.jpg
-            'pdf'     => $pdfPath,   // ex: uploads/pdfs/xxx.pdf
+            // 'pdf'     => $pdfPath,   // ex: uploads/pdfs/xxx.pdf
             'month'   => $month,
             'year'    => $year,
             'publish_date' =>$request->publish_date,
@@ -67,7 +67,7 @@ class MagazineController extends Controller
             'publish_date' => 'required',
             // 'year'  => 'required|numeric',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:2048',
-            'pdf'   => 'nullable|mimes:pdf|max:10240',
+            // 'pdf'   => 'nullable|mimes:pdf|max:10240',
         ]);
 
         if ($request->hasFile('image')) {

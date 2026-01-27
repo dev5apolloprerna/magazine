@@ -31,22 +31,22 @@ class MagazineController extends Controller
             'month' => 'required|string|max:100',
             'year'  => 'required|integer|min:1900|max:2100',
             'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'pdf'   => 'required|mimes:pdf|max:10240',
+            // 'pdf'   => 'required|mimes:pdf|max:10240',
             'iStatus' => 'nullable|in:0,1',
         ]);
 
         $imageDir = env('MAGAZINE_IMAGE_DIR', 'uploads/magazine/images');
-        $pdfDir   = env('MAGAZINE_PDF_DIR', 'uploads/magazine/pdfs');
+        // $pdfDir   = env('MAGAZINE_PDF_DIR', 'uploads/magazine/pdfs');
 
         $imagePath = FileUploadHelper::upload($request->file('image'), $imageDir, null, $data['title']);
-        $pdfPath   = FileUploadHelper::upload($request->file('pdf'), $pdfDir, null, $data['title']);
+        //$pdfPath   = FileUploadHelper::upload($request->file('pdf'), $pdfDir, null, $data['title']);
 
         Magazine::create([
             'title'   => $data['title'],
             'month'   => $data['month'],
             'year'    => $data['year'],
             'image'   => $imagePath ?? '',
-            'pdf'     => $pdfPath ?? '',
+            //'pdf'     => $pdfPath ?? '',
             'iStatus' => (int)($data['iStatus'] ?? 1),
             'isDelete'=> 0,
         ]);
@@ -69,12 +69,12 @@ class MagazineController extends Controller
             'month' => 'required|string|max:100',
             'year'  => 'required|integer|min:1900|max:2100',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'pdf'   => 'nullable|mimes:pdf|max:10240',
+            // 'pdf'   => 'nullable|mimes:pdf|max:10240',
             'iStatus' => 'nullable|in:0,1',
         ]);
 
         $imageDir = env('MAGAZINE_IMAGE_DIR', 'uploads/magazine/images');
-        $pdfDir   = env('MAGAZINE_PDF_DIR', 'uploads/magazine/pdfs');
+       // $pdfDir   = env('MAGAZINE_PDF_DIR', 'uploads/magazine/pdfs');
 
         if ($request->hasFile('image')) {
             $magazine->image = FileUploadHelper::upload(
@@ -109,7 +109,7 @@ class MagazineController extends Controller
 
         // delete files
         FileUploadHelper::delete($magazine->image);
-        FileUploadHelper::delete($magazine->pdf);
+        //FileUploadHelper::delete($magazine->pdf);
 
         // soft delete flag
         $magazine->isDelete = 1;

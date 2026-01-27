@@ -27,8 +27,15 @@ $roleid = Auth::guard('web_employees')->user()->role_id;
                     <li class="nav-item">
                         <a class="nav-link menu-link @if (request()->routeIs('magazine.*')) active @endif"
                             href="{{ route('magazine.index') }}">
-                            <i class="fas fa-folder"></i>
+                            <i class="fas fa-newspaper"></i>
                             <span data-key="t-category">Magazines</span>
+                        </a>
+                    </li>
+                     <li class="nav-item">
+                        <a class="nav-link menu-link @if (request()->routeIs('articles.*')) active @endif"
+                            href="{{ route('admin.articles.index') }}">
+                            <i class="far fa-newspaper"></i>
+                            <span data-key="t-category">Article</span>
                         </a>
                     </li>
                       <li class="nav-item">

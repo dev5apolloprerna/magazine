@@ -6,8 +6,12 @@
 <div class="main-content">
     <div class="page-content">
         <div class="container-fluid">
+            
             @include('common.alert')
 
+<div class="card">
+<div class="card-body">
+    
             <div class="row mb-3">
                 <div class="col-12 d-flex justify-content-between align-items-center">
                     <h4>{{ isset($customer) ? 'Edit' : 'Add' }} Customer</h4>
@@ -47,6 +51,14 @@
                             <span class="text-danger">{{ $errors->first('customer_email') }}</span>
                         @endif
                     </div>
+                     <div class="col-md-6 mb-4">
+                        <label class="form-label">Allowed Magazine (free) <span style="color:red;">*</span></label>
+                        <input type="text" name="free_magazine_allowed_count" class="form-control" value="{{ old('free_magazine_allowed_count', $customer->free_magazine_allowed_count ?? '') }}">
+                        @if($errors->has('free_magazine_allowed_count'))
+                            <span class="text-danger">{{ $errors->first('free_magazine_allowed_count') }}</span>
+                        @endif
+                    </div>
+                    
                     @if(!isset($customer))
                     <div class="col-md-6 mb-4">
                         <label class="form-label">Password <span style="color:red;">*</span></label>
@@ -70,5 +82,7 @@
 
         </div>
     </div>
+</div>
+</div>
 </div>
 @endsection

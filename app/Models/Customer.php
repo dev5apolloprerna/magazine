@@ -18,13 +18,7 @@ class Customer extends Authenticatable implements JWTSubject
     protected $primaryKey = 'customer_id';
 
     protected $fillable = [
-        'customer_name',
-        'customer_mobile',
-        'customer_email',
-        'password',
-        'login_count',
-        'magazine_count',
-        'iStatus'
+        'customer_id', 'customer_name', 'customer_mobile', 'customer_email', 'password', 'profile_image', 'login_count', 'magazine_count', 'free_article', 'article_count'
     ];
 
     protected $hidden = ['password'];

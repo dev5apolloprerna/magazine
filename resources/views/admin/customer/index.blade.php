@@ -37,6 +37,7 @@
                                     <th>Name</th>
                                     <th>Mobile</th>
                                     <th>Email</th>
+                                    <th>Allowed Article</th>
                                     <th>Status</th>
                                     <th>Created</th>
                                     <th>Action</th>
@@ -49,6 +50,8 @@
                                     <td>{{ $customer->customer_name }}</td>
                                     <td>{{ $customer->customer_mobile }}</td>
                                     <td>{{ $customer->customer_email }}</td>
+                                    <td>{{ $customer->free_article }}</td>
+                                    
                                     <!--<td>
                                         <input type="checkbox" class="toggle-status" data-id="{{ $customer->customer_id }}" {{ $customer->iStatus ? 'checked' : '' }}>
                                     </td>-->

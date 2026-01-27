@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\CustomerAuthController;
 use App\Http\Controllers\Api\CustomerPasswordController;
 use App\Http\Controllers\Api\MagazineApiController;
+use App\Http\Controllers\Api\ArticleApiController;
 use App\Http\Controllers\Api\SubscriptionApiController;
 use App\Http\Controllers\Api\PaymentController;
 
@@ -48,6 +49,11 @@ Route::middleware('auth:api')->group(function () {
     Route::post('my-subscription', [SubscriptionApiController::class, 'index']);      // subscription
 });
 
+
+Route::middleware('auth:api')->group(function () {
+    Route::post('/articles', [ArticleApiController::class, 'article_list']);
+    Route::post('/articles/show', [ArticleApiController::class, 'article_show']); // pass {id}
+});
 
 
 Route::middleware('auth:api')->group(function () {
