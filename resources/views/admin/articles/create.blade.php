@@ -32,7 +32,7 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Article Image <span class="text-danger">*</span></label>
+                    <label class="form-label">Article Image </label>
                     <input type="file" name="article_image" class="form-control">
                     @error('article_image')<small class="text-danger">{{ $message }}</small>@enderror
                 </div>
@@ -43,9 +43,15 @@
                     @error('article_pdf')<small class="text-danger">{{ $message }}</small>@enderror
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Is Paid <span class="text-danger">*</span></label>
-                    <input type="checkbox" name="isPaid" class="form-control" value="1">
+               <div class="mb-3">
+                    <label class="form-label">Is Paid</label>
+                
+                    {{-- hidden makes sure 0 is sent when checkbox is unchecked --}}
+                    <input type="hidden" name="isPaid" value="0">
+                
+                    <input type="checkbox" name="isPaid" value="1"
+                        {{ old('isPaid', 0) == 1 ? 'checked' : '' }}>
+                
                     @error('isPaid')<small class="text-danger">{{ $message }}</small>@enderror
                 </div>
                 

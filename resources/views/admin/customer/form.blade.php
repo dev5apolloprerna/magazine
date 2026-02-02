@@ -53,9 +53,9 @@
                     </div>
                      <div class="col-md-6 mb-4">
                         <label class="form-label">Allowed Magazine (free) <span style="color:red;">*</span></label>
-                        <input type="text" name="free_magazine_allowed_count" class="form-control" value="{{ old('free_magazine_allowed_count', $customer->free_magazine_allowed_count ?? '') }}">
-                        @if($errors->has('free_magazine_allowed_count'))
-                            <span class="text-danger">{{ $errors->first('free_magazine_allowed_count') }}</span>
+                        <input type="text" name="free_article" class="form-control" value="{{ old('free_article', $customer->free_article ?? '') }}">
+                        @if($errors->has('free_article'))
+                            <span class="text-danger">{{ $errors->first('free_article') }}</span>
                         @endif
                     </div>
                     

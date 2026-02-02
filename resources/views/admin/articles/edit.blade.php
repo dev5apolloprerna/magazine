@@ -62,8 +62,15 @@
                 </div>
                 
                 <div class="mb-3">
-                    <label class="form-label">Is Paid <span class="text-danger">*</span></label>
-                    <input type="checkbox" name="isPaid" value="1" {{ old('isPaid', $article->isPaid ?? 1) ? 'checked' : '' }}>
+                    <label class="form-label">Is Paid</label>
+                
+                    {{-- hidden makes sure 0 is sent when checkbox is unchecked --}}
+                    <input type="hidden" name="isPaid" value="0">
+                
+                    <input type="checkbox" name="isPaid" value="1"
+                        {{ old('isPaid', $article->isPaid ?? 0) == 1 ? 'checked' : '' }}>
+                
+                    @error('isPaid')<small class="text-danger">{{ $message }}</small>@enderror
                 </div>
 
                 <div class="mb-3">
