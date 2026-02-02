@@ -77,10 +77,15 @@ class MagazineApiController extends Controller
                 'month'       => $m->month,
                 'year'        => $m->year,
                 'created_at'  => $m->publish_date,
-                'image_url'   => magazine_base_url($m->image),
+                 'image_url' => $m->image
+                ? magazine_base_url($m->image)
+                : asset('assets/images/noimage.png'),
+
+
                 'can_view'    => $access['can_view'],
                 'lock_reason' => $access['reason'],
-                'pdf_url'     => $access['can_view'] ? magazine_base_url($m->pdf) : null,
+                'pdf_url' =>null,
+//                'pdf_url'     => $access['can_view'] ? magazine_base_url($m->pdf) : null,
             ];
 
         })->values();

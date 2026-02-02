@@ -61,7 +61,7 @@
                                 @if($row->article_image)
                                 <img src="{{ asset($row->article_image) }}" style="height:45px;border-radius:6px;">
                                 @else
-                                    -
+                                <img width="50" height="50" src="{{ asset('assets/images/noimage.png') }}">
                                 @endif
                             </td>
                             <td>
