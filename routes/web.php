@@ -116,7 +116,29 @@ Route::prefix('admin')->middleware(['auth:web'])->group(function () {
 });
 
 
+// Magazine-wise Article routes
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('magazines/{magazineId}/articles', [ArticleMasterController::class, 'index'])
+        ->name('magazines.articles.index');
 
+    Route::post('magazines/{magazineId}/articles', [ArticleMasterController::class, 'store'])
+        ->name('magazines.articles.store');
+
+    Route::put('magazines/{magazineId}/articles/{articleId}', [ArticleMasterController::class, 'update'])
+        ->name('magazines.articles.update');
+
+    Route::delete('magazines/{magazineId}/articles/{articleId}', [ArticleMasterController::class, 'destroy'])
+        ->name('magazines.articles.destroy');
+
+    Route::post('magazines/{magazineId}/articles/{articleId}/toggle-status', [ArticleMasterController::class, 'toggleStatus'])->name('magazines.articles.toggleStatus');
+
+    Route::post('magazines/{magazineId}/articles/bulk-delete', [ArticleMasterController::class, 'bulkDelete'])
+        ->name('magazines.articles.bulkDelete');
+
+
+});
+
+/*
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('articles', [ArticleMasterController::class, 'index'])->name('articles.index');
     Route::get('articles/create', [ArticleMasterController::class, 'create'])->name('articles.create');
@@ -127,4 +149,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 
     Route::post('articles/{id}/toggle-status', [ArticleMasterController::class, 'toggleStatus'])->name('articles.toggle-status');
+});*/
+
+
+Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
+Route::resource('free_article', App\Http\Controllers\Admin\FreeArticleController::class)->except(['show', 'create', 'edit']);
+Route::post('free_article/bulk-delete', [App\Http\Controllers\Admin\FreeArticleController::class, 'bulkDelete'])->name('free_article.bulkDelete');
+Route::get('free_article/edit/{id}', [App\Http\Controllers\Admin\FreeArticleController::class, 'edit'])->name('free_article.edit');
 });

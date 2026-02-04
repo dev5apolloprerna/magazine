@@ -116,6 +116,10 @@ class ArticleApiController extends Controller
 
         $customerId = (int) ($user->customer_id ?? $user->id);
 
+        Customer::where('customer_id', $user->id)->increment('article_count');
+        ArticleMaster::where('article_id', $id)->increment('view_count');
+
+
         $article = ArticleMaster::where('isDelete', 0)
             ->where('iStatus', 1)
             ->where('article_id', $id)

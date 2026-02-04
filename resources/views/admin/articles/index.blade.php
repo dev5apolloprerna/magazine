@@ -47,6 +47,7 @@
                         <th>Image</th>
                         <th>PDF</th>
                         <th>Is Paid</th>
+                        <th>view count</th>
                         <th>Status</th>
                         <th width="160">Action</th>
                     </tr>
@@ -73,6 +74,9 @@
                             </td>
                             <td>
                                  {{ $row->isPaid==1 ? 'Paid' : 'Free' }}
+                            </td>
+                            <td>
+                                {{ $row->view_count }}
                             </td>
                             <td>
                                 <form method="POST" action="{{ route('admin.articles.toggle-status', $row->article_id) }}">

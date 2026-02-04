@@ -31,13 +31,14 @@ $roleid = Auth::guard('web_employees')->user()->role_id;
                             <span data-key="t-category">Magazines</span>
                         </a>
                     </li>
-                     <li class="nav-item">
-                        <a class="nav-link menu-link @if (request()->routeIs('articles.*')) active @endif"
-                            href="{{ route('admin.articles.index') }}">
-                            <i class="far fa-newspaper"></i>
-                            <span data-key="t-category">Article</span>
+                     <!--  -->
+                    <li class="nav-item">
+                        <a href="{{ route('admin.free_article.index') }}" class="nav-link {{ request()->is('admin/free_article*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-newspaper"></i>
+                            Free Article
                         </a>
                     </li>
+
                       <li class="nav-item">
                         <a href="{{ route('plan.index') }}" class="nav-link {{ request()->is('admin/plan*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-cube"></i>
