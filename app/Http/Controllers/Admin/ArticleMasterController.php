@@ -6,62 +6,33 @@ use App\Http\Controllers\Controller;
 use App\Models\ArticleMaster;
 use App\Models\MagazineMaster;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class ArticleMasterController extends Controller
 {
-    public function index(Request $request)
+    public function index($magazineId)
     {
-        $q = ArticleMaster::with('magazine')
-            ->where('isDelete', 0);
+        $magazine=MagazineMaster::select('title')->where(['id'=>$magazineId])->first();
 
-        if ($request->filled('magazine_id')) {
-            $q->where('magazine_id', (int) $request->magazine_id);
-        }
+        $articles = ArticleMaster::where('magazine_id', $magazineId)
+            ->where('isDelete', 0)
+            ->orderByDesc('article_id')
+            ->paginate(15);
 
-        if ($request->filled('q')) {
-            $search = trim($request->q);
-            $q->where('article_title', 'like', "%{$search}%");
-        }
-
-        $articles = $q->orderByDesc('article_id')->paginate(15)->withQueryString();
-
-        $magazines = MagazineMaster::where('isDelete', 0)
-            ->where('iStatus', 1)
-            ->orderBy('title')
-            ->get(['id', 'title']);
-
-        return view('admin.articles.index', compact('articles', 'magazines'));
+        return view('admin.article_master.index', compact('articles', 'magazineId','magazine'));
     }
 
-    public function create()
+    public function store(Request $request, $magazineId)
     {
-        $magazines = MagazineMaster::where('isDelete', 0)
-            ->where('iStatus', 1)
-            ->orderBy('title')
-            ->get(['id', 'title']);
-
-        return view('admin.articles.create', compact('magazines'));
-    }
-
-    public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'magazine_id'   => 'required|integer|min:1',
+        $request->validate([
             'article_title' => 'required|string|max:255',
-            // ✅ image NOT required
-            'article_image' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:2048',
-            'article_pdf'   => 'required|file|mimes:pdf|max:10240',
-            'isPaid'        => 'nullable|in:0,1',
-            'iStatus'       => 'nullable|in:0,1',
+            'isPaid'        => 'required|in:0,1',
+            'iStatus'       => 'required|in:0,1',
+            'article_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048', // 2MB
+            'article_pdf'   => 'required|mimes:pdf|max:10240', // 10MB
         ]);
 
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
-
-        // ✅ only upload image if exists
-        $imgPath = null;
+         $imgPath = null;
         if ($request->hasFile('article_image')) {
             $imgPath = $this->uploadToPublic($request->file('article_image'), 'uploads/articles/images');
         }
@@ -69,52 +40,39 @@ class ArticleMasterController extends Controller
         $pdfPath = $this->uploadToPublic($request->file('article_pdf'), 'uploads/articles/pdfs');
 
         ArticleMaster::create([
-            'magazine_id'   => (int) $request->magazine_id,
+            'magazine_id'   => (int) $magazineId,
             'article_title' => $request->article_title,
-            'article_image' => $imgPath,          // ✅ can be null
+            'article_image' => $imgPath,
             'article_pdf'   => $pdfPath,
-            'isPaid'        => $request->filled('isPaid') ? (int) $request->isPaid : 0,
-            'iStatus'       => $request->filled('iStatus') ? (int) $request->iStatus : 1,
+            'isPaid'        => (int) $request->isPaid,
+            'view_count'    => 0,
+            'iStatus'       => (int) $request->iStatus,
             'isDelete'      => 0,
+            'created_at'    => now(),
+            'updated_at'    => now(),
         ]);
 
-        return redirect()->route('admin.articles.index')->with('success', 'Article created successfully');
+        return redirect()->route('admin.magazines.articles.index', $magazineId)
+            ->with('success', 'Article added successfully.');
     }
 
-    public function edit($id)
+    public function update(Request $request, $magazineId, $articleId)
     {
-        $article = ArticleMaster::where('article_id', (int) $id)
+        $article = ArticleMaster::where('magazine_id', $magazineId)
+            ->where('article_id', $articleId)
             ->where('isDelete', 0)
             ->firstOrFail();
 
-        $magazines = MagazineMaster::where('isDelete', 0)
-            ->where('iStatus', 1)
-            ->orderBy('title')
-            ->get(['id', 'title']);
-
-        return view('admin.articles.edit', compact('article', 'magazines'));
-    }
-
-    public function update(Request $request, $id)
-    {
-        $article = ArticleMaster::where('article_id', (int) $id)
-            ->where('isDelete', 0)
-            ->firstOrFail();
-
-        $validator = Validator::make($request->all(), [
-            'magazine_id'   => 'required|integer|min:1',
+        $request->validate([
             'article_title' => 'required|string|max:255',
-            // ✅ image NOT required
-            'article_image' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:2048',
-            'article_pdf'   => 'nullable|file|mimes:pdf|max:10240',
-            'isPaid'        => 'nullable|in:0,1',
-            'iStatus'       => 'nullable|in:0,1',
+            'isPaid'        => 'required|in:0,1',
+            'iStatus'       => 'required|in:0,1',
+            'article_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'article_pdf'   => 'nullable|mimes:pdf|max:10240', // optional in edit
         ]);
 
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
-
+        $imagePath = $article->article_image;
+        $pdfPath = $article->article_pdf;
         if ($request->hasFile('article_image')) {
             $this->deleteFromPublic($article->article_image);
             $article->article_image = $this->uploadToPublic($request->file('article_image'), 'uploads/articles/images');
@@ -125,7 +83,6 @@ class ArticleMasterController extends Controller
             $article->article_pdf = $this->uploadToPublic($request->file('article_pdf'), 'uploads/articles/pdfs');
         }
 
-        $article->magazine_id   = (int) $request->magazine_id;
         $article->article_title = $request->article_title;
         $article->isPaid        = $request->filled('isPaid') ? (int) $request->isPaid : 0;
 
@@ -135,34 +92,56 @@ class ArticleMasterController extends Controller
 
         $article->save();
 
-        return redirect()->route('admin.articles.index')->with('success', 'Article updated successfully');
+
+        return redirect()->route('admin.magazines.articles.index', $magazineId)
+            ->with('success', 'Article updated successfully.');
+    }
+    public function toggleStatus(Request $request)
+    {
+        $article = ArticleMaster::findOrFail($request->id);
+        $article->iStatus = $article->iStatus ? 0 : 1;
+        $article->save();
+
+        return response()->json(['success' => true, 'message' => 'Status updated']);
     }
 
-    public function destroy($id)
+    
+    public function bulkDelete(Request $request, $magazineId)
     {
-        $article = ArticleMaster::where('article_id', (int) $id)
+        $ids = $request->input('ids', []);
+        if (!is_array($ids) || count($ids) === 0) {
+            return redirect()->route('admin.magazines.articles.index', $magazineId)
+                ->with('error', 'Please select at least one article.');
+        }
+
+        ArticleMaster::where('magazine_id', $magazineId)
+            ->whereIn('article_id', $ids)
+            ->where('isDelete', 0)
+            ->update([
+                'isDelete'   => 1,
+                'updated_at' => now(),
+            ]);
+
+        return redirect()->route('admin.magazines.articles.index', $magazineId)
+            ->with('success', 'Selected articles deleted successfully.');
+    }
+
+
+    public function destroy($magazineId, $articleId)
+    {
+        $article = ArticleMaster::where('magazine_id', $magazineId)
+            ->where('article_id', $articleId)
             ->where('isDelete', 0)
             ->firstOrFail();
 
-        $article->isDelete = 1;
-        $article->save();
+        $article->update([
+            'isDelete'   => 1,
+            'updated_at' => now(),
+        ]);
 
-        return redirect()->route('admin.articles.index')->with('success', 'Article deleted successfully');
+        return redirect()->route('admin.magazines.articles.index', $magazineId)
+            ->with('success', 'Article deleted successfully.');
     }
-
-    public function toggleStatus($id)
-    {
-        $article = ArticleMaster::where('article_id', (int) $id)
-            ->where('isDelete', 0)
-            ->firstOrFail();
-
-        $article->iStatus = $article->iStatus == 1 ? 0 : 1;
-        $article->save();
-
-        return back()->with('success', 'Status updated');
-    }
-
-    // ✅ accepts null file
     private function uploadToPublic($file, string $folder): ?string
     {
         if (!$file) return null;
