@@ -61,11 +61,10 @@
                                                 <td>
                                                     <a href="{{ route('magazine.edit', $magazine->id) }}" class="text-primary"><i class="fas fa-edit"></i></a>
                                                     <a href="javascript:void(0);" onclick="deleteRecord('{{ $magazine->id }}')" class="text-danger ms-2"><i class="fas fa-trash-alt"></i></a>
-                                                    <a href="{{ route('admin.magazines.articles.index', $magazine->id) }}"
-                                                       class="btn btn-sm btn-outline-primary" title="Articles">
+                                                <a href="{{ route('admin.magazines.articles.index', $magazine->id) }}"
+                                                       class="text-success ms-2" title="Add Articles">
                                                        <i class="fa fa-file-text"></i>
                                                     </a>
-
                                                 </td>
                                             </tr>
                                             @endforeach

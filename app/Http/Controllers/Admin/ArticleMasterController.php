@@ -7,6 +7,7 @@ use App\Models\ArticleMaster;
 use App\Models\MagazineMaster;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ArticleMasterController extends Controller
 {
@@ -38,9 +39,10 @@ class ArticleMasterController extends Controller
         }
 
         $pdfPath = $this->uploadToPublic($request->file('article_pdf'), 'uploads/articles/pdfs');
-
+        $uuid = (string)Str::uuid();
         ArticleMaster::create([
             'magazine_id'   => (int) $magazineId,
+            'strGuid'       => $uuid,
             'article_title' => $request->article_title,
             'article_image' => $imgPath,
             'article_pdf'   => $pdfPath,
@@ -84,12 +86,18 @@ class ArticleMasterController extends Controller
         }
 
         $article->article_title = $request->article_title;
+        if(!isset($article->strGuid) && $article->strGuid == ""){
+            
+            $uuid = Str::uuid();
+            $article->strGuid   = $uuid;
+        }
+        
         $article->isPaid        = $request->filled('isPaid') ? (int) $request->isPaid : 0;
 
         if ($request->filled('iStatus')) {
             $article->iStatus = (int) $request->iStatus;
         }
-
+        
         $article->save();
 
 

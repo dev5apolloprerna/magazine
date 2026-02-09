@@ -8,13 +8,12 @@
         <div class="container-fluid">
 
     <div class="d-flex align-items-center justify-content-between mb-3">
-        <h4 class="mb-0">Articles - Magazine #{{ $magazine->title }}</h4>
+        <h4 class="mb-0">Articles - {{ $magazine->title }}</h4>
         <a href="{{ route('magazine.index') }}" class="btn btn-secondary btn-sm">Back</a>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
+               @include('common.alert')
+
 
     <div class="row">
 

@@ -31,7 +31,7 @@ $roleid = Auth::guard('web_employees')->user()->role_id;
                             <span data-key="t-category">Magazines</span>
                         </a>
                     </li>
-                     <!--  -->
+                     
                     <li class="nav-item">
                         <a href="{{ route('admin.free_article.index') }}" class="nav-link {{ request()->is('admin/free_article*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-newspaper"></i>
@@ -67,7 +67,20 @@ $roleid = Auth::guard('web_employees')->user()->role_id;
                                       <i class="far fa-circle nav-icon"></i></i>Customer Login Report
                                 </a>
                             </li>
+                             <li class="nav-item">
+                                <a href="{{ route('admin.reports.articleWisePdfViews') }}" class="nav-link">
+                                    <i class="ri-file-text-line"></i>
+                                    <span>Article Views Report</span>
+                                </a>
+                            </li>
+
                             <li class="nav-item">
+                                <a href="{{ route('admin.reports.userWiseArticleViews') }}" class="nav-link">
+                                    <i class="ri-user-line"></i>
+                                    <span>Customer Article Report</span>
+                                </a>
+                            </li>
+                            <!--<li class="nav-item">
                                 <a href="{{ route('admin.reports.userWisePdfViews') }}"
                                    class="nav-link {{ request()->routeIs('admin.reports.userWisePdfViews*') ? 'active' : '' }}">
                                     <i class="nav-icon fas fa-file-pdf"></i>
@@ -80,7 +93,7 @@ $roleid = Auth::guard('web_employees')->user()->role_id;
                                     <i class="nav-icon fas fa-chart-bar"></i>
                                     <p>Magazine View Report</p>
                                 </a>
-                            </li>
+                            </li>-->
 
 
                         </ul>
