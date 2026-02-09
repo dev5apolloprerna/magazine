@@ -74,7 +74,7 @@ class ArticleApiController extends Controller
                 'image_url' => $a->article_image
                 ? magazine_base_url($a->article_image)
                 : asset('assets/images/noimage.png'),
-
+                'strGuid'    => magazine_base_url($a->strGuid),
                 'can_view'        => (bool) $access['can_view'],
                 'lock_reason'     => $access['reason'],
                 'unlock_type'     => $access['unlock_type'], // subscription | free_count | locked
@@ -155,7 +155,7 @@ class ArticleApiController extends Controller
                     'image_url' => $a->article_image
                         ? magazine_base_url($a->article_image)
                         : asset('assets/images/noimage.png'),
-
+                    'strGuid'    => magazine_base_url($article->strGuid),
                     'pdf_url'       => null,
                 ],
             ], 403);
@@ -177,7 +177,7 @@ class ArticleApiController extends Controller
                     'image_url' => $article->article_image
                                 ? magazine_base_url($article->article_image)
                                 : asset('assets/images/noimage.png'),
-
+                    'strGuid'    => magazine_base_url($article->strGuid),
                 'pdf_url'       => magazine_base_url($article->article_pdf),
                 ],
             ]);
@@ -202,6 +202,7 @@ class ArticleApiController extends Controller
                     'article_title' => $article->article_title,
                     'isPaid'        => $isPaid,
                     'image_url' => $article->article_image                                 ? magazine_base_url($article->article_image)                                 : asset('assets/images/noimage.png'),
+                    'strGuid'    => magazine_base_url($article->strGuid),
                     'pdf_url'       => magazine_base_url($article->article_pdf),
                 ],
             ]);
@@ -264,6 +265,7 @@ class ArticleApiController extends Controller
                     'article_title' => $article->article_title,
                     'isPaid'        => $isPaid,
                     'image_url' => $article->article_image                                 ? magazine_base_url($article->article_image)                                 : asset('assets/images/noimage.png'),
+                    'strGuid'    => magazine_base_url($article->strGuid),
                     'pdf_url'       => null,
                 ],
             ], 403);
@@ -280,6 +282,7 @@ class ArticleApiController extends Controller
                 'article_title' => $article->article_title,
                 'isPaid'        => $isPaid,
                 'image_url' => $article->article_image                                 ? magazine_base_url($article->article_image)                                 : asset('assets/images/noimage.png'),
+                'strGuid'    => magazine_base_url($article->strGuid),
                 'pdf_url'       => magazine_base_url($article->article_pdf),
             ],
         ]);

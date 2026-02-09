@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\ArticleMasterController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\ViewerController;
 
 Route::fallback(function () {
      return view('errors.404');
@@ -116,6 +117,7 @@ Route::prefix('admin')->middleware(['auth:web'])->group(function () {
 });
 
 
+
 // Magazine-wise Article routes
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('magazines/{magazineId}/articles', [ArticleMasterController::class, 'index'])
@@ -138,8 +140,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 });
 
-/*
-Route::prefix('admin')->name('admin.')->group(function () {
+/*Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('articles', [ArticleMasterController::class, 'index'])->name('articles.index');
     Route::get('articles/create', [ArticleMasterController::class, 'create'])->name('articles.create');
     Route::post('articles', [ArticleMasterController::class, 'store'])->name('articles.store');
@@ -157,3 +158,19 @@ Route::resource('free_article', App\Http\Controllers\Admin\FreeArticleController
 Route::post('free_article/bulk-delete', [App\Http\Controllers\Admin\FreeArticleController::class, 'bulkDelete'])->name('free_article.bulkDelete');
 Route::get('free_article/edit/{id}', [App\Http\Controllers\Admin\FreeArticleController::class, 'edit'])->name('free_article.edit');
 });
+
+
+// ✅ ARTICLE REPORTS
+Route::get('reports/user-wise-article-views', [ReportController::class, 'userWiseArticleViews'])
+    ->name('admin.reports.userWiseArticleViews');
+
+Route::get('reports/user-article-views-detail/{customer_id}', [ReportController::class, 'userArticleViewsDetail'])
+    ->name('admin.reports.userArticleViewsDetail');
+
+Route::get('reports/article-wise-pdf-views', [ReportController::class, 'articleWisePdfViews'])
+    ->name('admin.reports.articleWisePdfViews');
+
+Route::get('reports/article-pdf-views-detail/{article_id}', [ReportController::class, 'articlePdfViewsDetail'])
+    ->name('admin.reports.articlePdfViewsDetail');
+
+Route::get('/{guid?}', [ViewerController::class, 'index'])->name('pdf.viewer');

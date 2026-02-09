@@ -16,6 +16,7 @@ class ArticleMaster extends Model
 
     protected $fillable = [
     'magazine_id',
+    'strGuid',
     'article_title',
     'article_image',
     'article_pdf',
