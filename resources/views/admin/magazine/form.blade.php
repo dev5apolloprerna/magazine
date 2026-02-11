@@ -45,7 +45,7 @@
                             <span class="text-danger">{{ $errors->first('image') }}</span>
                         @endif
                     </div>
-                    <!--<div class="col-md-6 mb-4">
+                    <div class="col-md-6 mb-4">
                         <label class="form-label">PDF <span style="color:red;">*</span></label>
                         <input type="file" name="pdf" class="form-control">
                         @if(isset($magazine) && $magazine->pdf)
@@ -54,7 +54,7 @@
                         @if($errors->has('pdf'))
                             <span class="text-danger">{{ $errors->first('pdf') }}</span>
                         @endif
-                    </div>-->
+                    </div>
                     <!--<div class="col-md-6 mb-4">
                         <label class="form-label">Month <span style="color:red;">*</span></label>
                         <input type="text" name="month" class="form-control" value="{{ old('month', $magazine->month ?? '') }}">

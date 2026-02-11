@@ -36,12 +36,12 @@ class MagazineController extends Controller
             
         // ✅ upload into public_html/magazine/uploads/images and uploads/pdfs
         $imagePath = $this->uploadFile($request->file('image'), 'images');
-        //$pdfPath   = $this->uploadFile($request->file('pdf'), 'pdfs');
+        $pdfPath   = $this->uploadFile($request->file('pdf'), 'pdfs');
 
         MagazineMaster::create([
             'title'   => $request->title,
             'image'   => $imagePath, // ex: uploads/images/xxx.jpg
-            // 'pdf'     => $pdfPath,   // ex: uploads/pdfs/xxx.pdf
+            'pdf'     => $pdfPath,   // ex: uploads/pdfs/xxx.pdf
             'month'   => $month,
             'year'    => $year,
             'publish_date' =>$request->publish_date,

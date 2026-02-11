@@ -205,6 +205,74 @@
                                         </form>
                                     </td>
                                 </tr>
+                                
+                                {{-- ✅ EDIT POPUP MODAL --}}
+                                <div class="modal fade" id="editArticleModal" tabindex="-1" aria-hidden="true">
+                                  <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <form method="POST" id="editArticleForm" action="" enctype="multipart/form-data">
+                                        @csrf
+                                        @method('PUT')
+                                
+                                        <div class="modal-header">
+                                          <h5 class="modal-title">Edit Article</h5>
+                                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                
+                                        <div class="modal-body">
+                                
+                                            <div class="mb-3">
+                                                <label class="form-label">Article Title</label>
+                                                <input type="text" name="article_title" id="edit_article_title" class="form-control" required>
+                                            </div>
+                                
+                                            <div class="mb-3">
+                                                <label class="form-label">Article Image (optional)</label>
+                                                <input type="file" name="article_image" class="form-control" accept="image/*">
+                                                <div class="small mt-1">
+                                                    <a href="#" target="_blank" id="edit_image_preview_link" style="display:none;">Current Image</a>
+                                                </div>
+                                            </div>
+                                
+                                            <div class="mb-3">
+                                                <label class="form-label">Article PDF (optional)</label>
+                                                <input type="file" name="article_pdf" class="form-control" accept="application/pdf">
+                                                <div class="small mt-1">
+                                                    <a href="#" target="_blank" id="edit_pdf_preview_link" style="display:none;">Current PDF</a>
+                                                </div>
+                                            </div>
+                                
+                                
+                                            <div class="row">
+                                                <div class="col-6 mb-3">
+                                                    <label class="form-label">Paid?</label>
+                                                    <select name="isPaid" id="edit_isPaid" class="form-control" required>
+                                                        <option value="0">Free</option>
+                                                        <option value="1">Paid</option>
+                                                    </select>
+                                                </div>
+                                
+                                                <div class="col-6 mb-3">
+                                                    <label class="form-label">Status</label>
+                                                    <select name="iStatus" id="edit_iStatus" class="form-control" required>
+                                                        <option value="1">Active</option>
+                                                        <option value="0">Inactive</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                
+                                        </div>
+                                
+                                        <div class="modal-footer">
+                                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-image-url="{{ $a->article_image ? asset('storage/'.$a->article_image) : '' }}"
+                                 data-pdf-url="{{ $a->article_pdf ? asset('storage/'.$a->article_pdf) : '' }}"
+                                >Close</button>
+                                          <button class="btn btn-primary">Update</button>
+                                        </div>
+                                      </form>
+                                    </div>
+                                  </div>
+                                </div>
                             @empty
                                 <tr>
                                     <td colspan="6" class="text-center text-muted py-4">
@@ -226,73 +294,6 @@
 </div>
 
 
-{{-- ✅ EDIT POPUP MODAL --}}
-<div class="modal fade" id="editArticleModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-        <form method="POST" id="editArticleForm" action="" enctype="multipart/form-data">
-        @csrf
-        @method('PUT')
-
-        <div class="modal-header">
-          <h5 class="modal-title">Edit Article</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-
-        <div class="modal-body">
-
-            <div class="mb-3">
-                <label class="form-label">Article Title</label>
-                <input type="text" name="article_title" id="edit_article_title" class="form-control" required>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Article Image (optional)</label>
-                <input type="file" name="article_image" class="form-control" accept="image/*">
-                <div class="small mt-1">
-                    <a href="#" target="_blank" id="edit_image_preview_link" style="display:none;">Current Image</a>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Article PDF (optional)</label>
-                <input type="file" name="article_pdf" class="form-control" accept="application/pdf">
-                <div class="small mt-1">
-                    <a href="#" target="_blank" id="edit_pdf_preview_link" style="display:none;">Current PDF</a>
-                </div>
-            </div>
-
-
-            <div class="row">
-                <div class="col-6 mb-3">
-                    <label class="form-label">Paid?</label>
-                    <select name="isPaid" id="edit_isPaid" class="form-control" required>
-                        <option value="0">Free</option>
-                        <option value="1">Paid</option>
-                    </select>
-                </div>
-
-                <div class="col-6 mb-3">
-                    <label class="form-label">Status</label>
-                    <select name="iStatus" id="edit_iStatus" class="form-control" required>
-                        <option value="1">Active</option>
-                        <option value="0">Inactive</option>
-                    </select>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-image-url="{{ $a->article_image ? asset('storage/'.$a->article_image) : '' }}"
- data-pdf-url="{{ $a->article_pdf ? asset('storage/'.$a->article_pdf) : '' }}"
->Close</button>
-          <button class="btn btn-primary">Update</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
 
 </div>
 </div>

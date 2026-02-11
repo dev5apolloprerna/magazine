@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Customer;
 use App\Models\CustomerLoginLog;
 use App\Models\Subscription;
+use App\Models\FreeArticle;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
@@ -61,6 +62,7 @@ class CustomerAuthController extends Controller
     }
     public function register(Request $request)
     {
+        $FreeArticle=FreeArticle::first();
         $request->validate([
             'customer_name'   => 'required|string|max:255',
             'customer_mobile' => 'required|digits:10|unique:customer_master,customer_mobile',
@@ -73,6 +75,7 @@ class CustomerAuthController extends Controller
             'customer_mobile' => $request->customer_mobile,
             'customer_email'  => $request->customer_email,
             'password'        => Hash::make($request->password),
+            'free_article'    => $FreeArticle->free_article,
             'iStatus'         => 1,
         ]);
 

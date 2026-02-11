@@ -24,128 +24,73 @@ class ArticleApiController extends Controller
      * NOTE: List does NOT decrement free count.
      */
     public function article_list(Request $request)
-{
-    $user = auth()->guard('api')->user();
-    if (!$user) {
-        return response()->json(['success' => false, 'message' => 'Unauthorised'], 401);
-    }
-
-    $customerId = (int) ($user->customer_id ?? $user->id);
-
-    // optional: keep active flag updated
-    $this->refreshActiveSubscription($customerId);
-
-    $customer = Customer::where('customer_id', $customerId)->first();
-    $freeRemaining = (int) ($customer->free_article ?? 0);
-
-    // ---------------------------
-    // ✅ FILTERS
-    // ---------------------------
-    $q = ArticleMaster::query()
-        ->where('isDelete', 0)
-        ->where('iStatus', 1);
-
-    // magazine filter (important for magazine object)
-    $magazineId = null;
-    if ($request->filled('magazine_id')) {
-        $magazineId = (int) $request->magazine_id;
-        $q->where('magazine_id', $magazineId);
-    }
-
-    if ($request->filled('search')) {
-        $search = trim((string) $request->search);
-        $q->where('article_title', 'like', "%{$search}%");
-    }
-
-    $articles = $q->orderByDesc('article_id')->limit(50)->get();
-
-    if ($articles->isEmpty()) {
-        return response()->json([
-            'success' => false,
-            'message' => 'No articles found',
-            'magazine' => null,
-            'free_remaining' => $freeRemaining,
-            'data' => []
-        ]);
-    }
-
-    // ---------------------------
-    // ✅ LOAD MAGAZINE ONLY ONCE
-    // ---------------------------
-    $magazine = null;
-
-    // If magazine_id provided -> return that magazine
-    if ($magazineId) {
-        $mag = MagazineMaster::where('isDelete', 0)
-            ->where('iStatus', 1)
-            ->where('id', $magazineId)
-            ->first();
-
-        if ($mag) {
-            $magazine = [
-                'id'        => (int) $mag->id,
-                'title'     => $mag->title,
-                'month'     => $mag->month,
-                'year'      => $mag->year,
-                'image_url' => $mag->image ? magazine_base_url($mag->image) : null,
-                'pdf_url'   => $mag->pdf ? magazine_base_url($mag->pdf) : null,
-            ];
+    {
+        $user = auth()->guard('api')->user();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthorised'], 401);
         }
-    } else {
-        // If magazine_id not provided -> return null (because multiple magazines possible)
-        $magazine = null;
-    }
 
-    // ---------------------------
-    // ✅ BUILD ARTICLE DATA
-    // ---------------------------
-    $data = $articles->map(function ($a) use ($customerId, $freeRemaining) {
+        $customerId = (int) ($user->customer_id ?? $user->id);
 
-        // for list access check, we must load magazine of that article
-        $mag = MagazineMaster::where('isDelete', 0)
-            ->where('iStatus', 1)
-            ->where('id', $a->magazine_id)
-            ->first();
+        // optional: keep active flag updated
+        $this->refreshActiveSubscription($customerId);
 
-        $access = $this->articleAccessForList_v3($a, $mag, $customerId, $freeRemaining);
+        $customer = Customer::where('customer_id', $customerId)->first();
+        $freeRemaining = (int) ($customer->free_article ?? 0);
 
-        return [
-            'article_id'    => (int) $a->article_id,
-            'magazine_id'   => (int) $a->magazine_id,
-            'article_title' => $a->article_title,
-            'isPaid'        => (int) ($a->isPaid ?? 0),
+        $q = ArticleMaster::query()
+            ->where('isDelete', 0)
+            ->where('iStatus', 1);
 
-            'image_url' => $a->article_image
+        if ($request->filled('magazine_id')) {
+            $q->where('magazine_id', (int) $request->magazine_id);
+        }
+
+        if ($request->filled('search')) {
+            $search = trim((string) $request->search);
+            $q->where('article_title', 'like', "%{$search}%");
+        }
+
+        $articles = $q->orderByDesc('article_id')->limit(50)->get();
+
+        if ($articles->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'No articles found', 'data' => []]);
+        }
+
+        // preload magazines (avoid N+1)
+        $magazineIds = $articles->pluck('magazine_id')->unique()->values();
+        $magazines = MagazineMaster::whereIn('id', $magazineIds)->get()->keyBy('id');
+
+        $data = $articles->map(function ($a) use ($customerId, $magazines, $freeRemaining) {
+            $mag = $magazines->get($a->magazine_id);
+
+            $access = $this->articleAccessForList_v3($a, $mag, $customerId, $freeRemaining);
+
+            return [
+                'article_id'      => (int) $a->article_id,
+                'magazine_id'     => (int) $a->magazine_id,
+                'article_title'   => $a->article_title,
+                'isPaid'          => (int) ($a->isPaid ?? 0),
+                'image_url' => $a->article_image
                 ? magazine_base_url($a->article_image)
                 : asset('assets/images/noimage.png'),
+                'strGuid'    => magazine_base_url($a->strGuid),
+                'can_view'        => (bool) $access['can_view'],
+                'lock_reason'     => $access['reason'],
+                'unlock_type'     => $access['unlock_type'], // subscription | free_count | locked
 
-            'strGuid' => $a->strGuid ? magazine_base_url($a->strGuid) : null,
+                'free_remaining'  => $freeRemaining,
 
-            'can_view'    => (bool) $access['can_view'],
-            'unlock_type' => $access['unlock_type'], // subscription | free_count | locked
-            'lock_reason' => $access['reason'],
+                'pdf_url'         => $access['can_view'] ? magazine_base_url($a->article_pdf) : null,
+            ];
+        })->values();
 
-            'pdf_url' => $access['can_view']
-                ? magazine_base_url($a->article_pdf)
-                : null,
-        ];
-    })->values();
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Article list fetched successfully',
-
-        // ✅ magazine only once
-        'magazine' => $magazine,
-
-        // ✅ free remaining only once
-        'free_remaining' => $freeRemaining,
-
-        // ✅ articles list
-        'data' => $data
-    ]);
-}
-
+        return response()->json([
+            'success' => true,
+            'message' => 'Article list fetched successfully',
+            'data'    => $data
+        ]);
+    }
 
     /**
      * ✅ Article Show / View
