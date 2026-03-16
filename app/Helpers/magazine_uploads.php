@@ -16,23 +16,9 @@ if (! function_exists('magazine_target_root')) {
         if (File::isDirectory($live)) {
             return $live;
         }
-        return public_path('magazine');
-    }
-}
-
-if (! function_exists('magazine_base_url')) {
-    /**
-     * Public base URL for the same content.
-     * Uses your magazine_base_url(), and falls back to app url + /magazine
-     */
-    function magazine_base_url(string $append = ''): string
-    {
-        $base = magazine_base_url(); // from your snippet
-        // If you're running locally and the above already resolves correctly, remove the fallback:
-        if (!$base) {
-            $base = rtrim(config('app.url'), '/') . '/magazine';
-        }
-        return $append ? rtrim($base, '/') . '/' . ltrim($append, '/') : rtrim($base, '/');
+      
+        //return $append ? rtrim($base, '/') . '/' . ltrim($append, '/') : rtrim($base, '/');
+                return public_path();
     }
 }
 

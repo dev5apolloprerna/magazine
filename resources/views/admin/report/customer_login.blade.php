@@ -17,12 +17,12 @@
                 <div class="card-body">
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <form method="GET" class="d-flex" action="{{ route('admin.customers.index') }}">
+                            <form method="GET" class="d-flex" action="{{ route('admin.customers_login-history.index') }}">
                                 <input type="text" name="q" value="{{ $q ?? '' }}" class="form-control"
                                 placeholder="Search Name">
                                 
                                 <button type="submit" class="btn btn-primary gap-2 mx-2">Search</button>
-                                <a href="{{ route('admin.customers.index') }}" class="btn btn-secondary mx-2">Reset</a>
+                                <a href="{{ route('admin.customers_login-history.index') }}" class="btn btn-secondary mx-2">Reset</a>
 
                             </form>
                         </div>

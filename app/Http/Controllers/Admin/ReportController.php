@@ -12,37 +12,51 @@ use App\Models\Customer;
 
 class ReportController extends Controller
 {
-    public function index(Request $request)
+   public function index(Request $request)
+{
+    try 
     {
-         $q = $request->q;
+        $q = $request->q;
 
         $customers = Customer::from('customer_master as cm')
-        ->leftJoin('customer_login_log as cl', 'cl.customer_id', '=', 'cm.customer_id')
-        ->when($q, function ($query) use ($q) {
+            ->leftJoin(
+                DB::raw('
+                    (
+                        SELECT customer_id, MAX(login_date_time) as last_login
+                        FROM customer_login_log
+                        GROUP BY customer_id
+                    ) as cl
+                '),
+                'cl.customer_id',
+                '=',
+                'cm.customer_id'
+            )
+            ->when($q, function ($query) use ($q) {
                 $query->where(function ($sub) use ($q) {
                     $sub->where('cm.customer_name', 'like', "%{$q}%")
                         ->orWhere('cm.customer_mobile', 'like', "%{$q}%")
                         ->orWhere('cm.customer_email', 'like', "%{$q}%");
                 });
             })
+            ->select(
+                'cm.customer_id',
+                'cm.customer_name',
+                'cm.customer_mobile',
+                'cm.customer_email',
+                'cm.login_count',
+                'cl.last_login'
+            )
+            ->orderByDesc('cm.customer_id')
+            ->paginate(20);
 
-        ->select(
-            'cm.customer_id',
-            'cm.customer_name',
-            'cm.customer_mobile',
-            'cm.customer_email',
-            'cm.login_count',
-            DB::raw('MAX(cl.login_date_time) as last_login')
-        )
-        ->groupBy('cm.customer_id', 'cm.customer_name', 'cm.customer_mobile', 'cm.customer_email')
-        ->orderByDesc('cm.customer_id')
-        ->paginate(20);
-
-        return view('admin.report.customer_login', compact('customers','q'));
-    }
+        return view('admin.report.customer_login', compact('customers', 'q'));
+    } catch (\Exception $e) {
+echo $e->getMessage();    }
+}
 
     public function loginHistory($customer_id)
     {
+        
         $customer = Customer::where('customer_id', $customer_id)->firstOrFail();
 
         $logs = $customer->loginLogs()

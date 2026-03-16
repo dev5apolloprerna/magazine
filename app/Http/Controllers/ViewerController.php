@@ -20,4 +20,9 @@ class ViewerController extends Controller
         }
         return view('pdf-viewer',compact('article','magazine'));
     }
+      
+
 }
+
+
+
