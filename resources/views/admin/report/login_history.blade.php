@@ -18,7 +18,7 @@
                   </div>
         </div>
         <div class="col-md-6 text-end">
-            <a href="{{ route('admin.customers.index') . (request()->getQueryString() ? '?' . request()->getQueryString() : '') }}"
+            <a href="{{ route('admin.customers_login-history.index') . (request()->getQueryString() ? '?' . request()->getQueryString() : '') }}"
                class="btn btn-secondary btn-sm mb-3">
                 Back
             </a>

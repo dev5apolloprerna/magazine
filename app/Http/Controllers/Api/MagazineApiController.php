@@ -261,8 +261,8 @@ class MagazineApiController extends Controller
                 'title'     => $mag->title,
                 'month'     => $mag->month,
                 'year'      => $mag->year,
-                'image_url' => magazine_base_url($mag->image),
-                'pdf_url'   => magazine_base_url($mag->pdf),
+                'image_url' => $mag->image ? magazine_base_url($mag->image) : null,
+                'pdf_url'   => $mag->pdf ? magazine_base_url($mag->pdf) : null,
             ],
         ]);
     }

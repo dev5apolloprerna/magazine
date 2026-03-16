@@ -62,8 +62,8 @@ $roleid = Auth::guard('web_employees')->user()->role_id;
                     <div class="menu-dropdown collapse show" id="sidebarMore" style="">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('admin.customers.index') }}"
-                                   class="nav-link {{ request()->routeIs('admin.customers.index') ? 'active' : '' }}">
+                                <a href="{{ route('admin.customers_login-history.index') }}"
+                                   class="nav-link {{ request()->routeIs('admin.customers_login-history.index') ? 'active' : '' }}">
                                       <i class="far fa-circle nav-icon"></i></i>Customer Login Report
                                 </a>
                             </li>

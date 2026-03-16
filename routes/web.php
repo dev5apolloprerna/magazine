@@ -5,6 +5,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\PermissionsController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\PrivacyPolicyController;
 
 use App\Http\Controllers\Admin\MagazineController;
 use App\Http\Controllers\Admin\CustomerController;
@@ -25,10 +26,22 @@ Route::get('/login', function () {
     return redirect()->route('login');
 });
 
+Route::get('/clear-cache', function () {
+	Artisan::call('cache:clear');
+	Artisan::call('view:clear');
+	Artisan::call('route:clear');
+	Artisan::call('config:clear');
+	Artisan::call('config:cache');
+	//Artisan::call('cache:forget spatie.permission.cache'); // Add this line
+	//Artisan::call('storage:link');
+	return 'Cache is cleared';
+});
 
 Auth::routes(['register' => false]);
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
+Route::get('/privacy-policy', [PrivacyPolicyController::class, 'index'])->name('privacy.policy');
+
 
 // Profile Routes
 Route::prefix('profile')->name('profile.')->middleware('auth')->group(function () {
@@ -90,7 +103,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 
 Route::prefix('admin')->middleware(['auth'])->group(function () 
 {
-    Route::get('/customers', [ReportController::class, 'index'])->name('admin.customers.index');
+    Route::get('/customers/login-history', [ReportController::class, 'index'])->name('admin.customers_login-history.index');
     Route::get('/customers/{customer_id}/login-history', [ReportController::class, 'loginHistory'])->name('admin.customers.loginHistory');
     Route::get('/customers/login-history/{customer_id}', [ReportController::class, 'loginHistoryAjax'])
         ->name('admin.customers.loginHistoryAjax');
